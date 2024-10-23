@@ -73,7 +73,7 @@ class WordHuntGame {
         // Draw connecting lines for selected cells
         if (this.selectedCells.length > 1) {
             this.ctx.beginPath();
-            this.ctx.strokeStyle = 'var(--bs-info)';
+            this.ctx.strokeStyle = '#0dcaf0'; // Bootstrap info color
             this.ctx.lineWidth = 3;
             
             const startCell = this.selectedCells[0];
@@ -96,40 +96,222 @@ class WordHuntGame {
     drawCell(row, col) {
         const x = col * this.cellSize;
         const y = row * this.cellSize;
-        const padding = 2; // Add padding between cells
+        const padding = 2;
         
         // Check if cell is selected
         const isSelected = this.selectedCells.some(cell => cell.row === row && cell.col === col);
         
         // Draw cell background
-        this.ctx.fillStyle = isSelected ? 'rgba(var(--bs-primary-rgb), 0.8)' : 'rgba(var(--bs-dark-rgb), 0.8)';
+        this.ctx.fillStyle = isSelected ? '#0d6efd' : '#212529'; // Bootstrap primary and dark colors
         this.ctx.fillRect(x + padding, y + padding, this.cellSize - 2*padding, this.cellSize - 2*padding);
         
         // Draw cell border
-        this.ctx.strokeStyle = 'rgba(var(--bs-secondary-rgb), 0.5)';
+        this.ctx.strokeStyle = '#6c757d'; // Bootstrap secondary color
         this.ctx.strokeRect(x + padding, y + padding, this.cellSize - 2*padding, this.cellSize - 2*padding);
         
-        // Draw letter with better contrast
-        if (this.grid[row] && typeof this.grid[row][col] === 'string') {
-            console.log(`Drawing letter at (${row},${col}):`, this.grid[row][col]); // Debug log
-            
-            // Set text style with higher contrast
-            this.ctx.fillStyle = isSelected ? '#ffffff' : 'rgba(var(--bs-light-rgb), 0.9)';
-            this.ctx.font = `bold ${Math.floor(this.cellSize * 0.5)}px Arial`;
+        // Draw letter
+        if (this.grid[row] && this.grid[row][col]) {
+            this.ctx.fillStyle = isSelected ? '#ffffff' : '#f8f9fa'; // White or light color
+            this.ctx.font = `bold ${Math.floor(this.cellSize * 0.6)}px Arial`;
             this.ctx.textAlign = 'center';
             this.ctx.textBaseline = 'middle';
-            
-            // Draw letter
-            const letter = this.grid[row][col];
             this.ctx.fillText(
-                letter,
+                this.grid[row][col],
                 x + this.cellSize/2,
                 y + this.cellSize/2
             );
         }
     }
 
-    [Rest of the class implementation remains unchanged...]
+    getCellFromEvent(e) {
+        const rect = this.canvas.getBoundingClientRect();
+        const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : null);
+        const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : null);
+        
+        if (clientX === null || clientY === null) return null;
+        
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+        
+        const col = Math.floor(x / this.cellSize);
+        const row = Math.floor(y / this.cellSize);
+        
+        if (row >= 0 && row < 4 && col >= 0 && col < 4) {
+            return { row, col };
+        }
+        return null;
+    }
+
+    handleMouseDown(e) {
+        if (this.isGameOver) return;
+        
+        const cell = this.getCellFromEvent(e);
+        if (cell) {
+            this.selectedCells = [cell];
+            this.currentWord = this.grid[cell.row][cell.col];
+            this.drawGrid();
+        }
+    }
+
+    handleMouseMove(e) {
+        if (this.isGameOver || this.selectedCells.length === 0) return;
+        
+        const cell = this.getCellFromEvent(e);
+        if (cell && !this.isCellSelected(cell.row, cell.col)) {
+            const lastCell = this.selectedCells[this.selectedCells.length - 1];
+            if (this.isAdjacent(lastCell, cell)) {
+                this.selectedCells.push(cell);
+                this.currentWord += this.grid[cell.row][cell.col];
+                this.drawGrid();
+            }
+        }
+    }
+
+    handleMouseUp() {
+        this.handleWordSubmission();
+    }
+
+    handleTouchStart(e) {
+        e.preventDefault();
+        if (this.isGameOver) return;
+        
+        const cell = this.getCellFromEvent(e);
+        if (cell) {
+            this.selectedCells = [cell];
+            this.currentWord = this.grid[cell.row][cell.col];
+            this.drawGrid();
+        }
+    }
+
+    handleTouchMove(e) {
+        e.preventDefault();
+        if (this.isGameOver || this.selectedCells.length === 0) return;
+        
+        const cell = this.getCellFromEvent(e);
+        if (cell && !this.isCellSelected(cell.row, cell.col)) {
+            const lastCell = this.selectedCells[this.selectedCells.length - 1];
+            if (this.isAdjacent(lastCell, cell)) {
+                this.selectedCells.push(cell);
+                this.currentWord += this.grid[cell.row][cell.col];
+                this.drawGrid();
+            }
+        }
+    }
+
+    handleTouchEnd(e) {
+        e.preventDefault();
+        this.handleWordSubmission();
+    }
+
+    async handleWordSubmission() {
+        if (this.isGameOver || !this.currentWord || this.currentWord.length < 3) {
+            this.resetSelection();
+            return;
+        }
+
+        try {
+            const response = await fetch(`/validate/${this.currentWord}`);
+            const data = await response.json();
+            
+            if (data.valid && !this.foundWords.has(this.currentWord)) {
+                this.validWordSound.play();
+                this.foundWords.add(this.currentWord);
+                this.score += this.currentWord.length;
+                this.updateScore();
+                this.updateFoundWords();
+                this.showFeedback(true);
+            } else {
+                this.invalidWordSound.play();
+                this.showFeedback(false);
+            }
+        } catch (error) {
+            console.error("Error validating word:", error);
+        }
+
+        this.resetSelection();
+    }
+
+    resetSelection() {
+        this.selectedCells = [];
+        this.currentWord = '';
+        this.drawGrid();
+    }
+
+    isAdjacent(cell1, cell2) {
+        const rowDiff = Math.abs(cell1.row - cell2.row);
+        const colDiff = Math.abs(cell1.col - cell2.col);
+        return rowDiff <= 1 && colDiff <= 1 && !(rowDiff === 0 && colDiff === 0);
+    }
+
+    isCellSelected(row, col) {
+        return this.selectedCells.some(cell => cell.row === row && cell.col === col);
+    }
+
+    updateScore() {
+        document.getElementById('score').textContent = this.score;
+    }
+
+    updateFoundWords() {
+        const wordsList = document.getElementById('foundWords');
+        wordsList.innerHTML = '';
+        const words = Array.from(this.foundWords);
+        words.sort();
+        for (let i = 0; i < words.length; i++) {
+            const word = words[i];
+            const li = document.createElement('li');
+            li.className = 'list-group-item';
+            li.textContent = `${word} (+${word.length})`;
+            wordsList.appendChild(li);
+        }
+    }
+
+    showFeedback(isValid) {
+        const feedbackDiv = document.createElement('div');
+        feedbackDiv.className = `feedback ${isValid ? 'valid' : 'invalid'}`;
+        feedbackDiv.textContent = isValid ? '+' + this.currentWord.length : 'Invalid';
+        document.querySelector('.game-container').appendChild(feedbackDiv);
+        
+        setTimeout(() => {
+            feedbackDiv.remove();
+        }, 1000);
+    }
+
+    startTimer() {
+        if (this.timerInterval) clearInterval(this.timerInterval);
+        
+        let timeLeft = this.gameTime;
+        const timerElement = document.getElementById('timer');
+        
+        const updateTimer = () => {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (timeLeft === 0) {
+                clearInterval(this.timerInterval);
+                this.isGameOver = true;
+                this.showGameOverScreen();
+            }
+            timeLeft--;
+        };
+
+        updateTimer(); // Initial update
+        this.timerInterval = setInterval(updateTimer, 1000);
+    }
+
+    showGameOverScreen() {
+        const gameOverModal = document.createElement('div');
+        gameOverModal.className = 'game-over-modal';
+        gameOverModal.innerHTML = `
+            <div class="game-over-content">
+                <h2>Game Over!</h2>
+                <p>Final Score: ${this.score}</p>
+                <p>Words Found: ${this.foundWords.size}</p>
+                <button class="btn btn-primary" onclick="window.game.startNewGame()">Play Again</button>
+            </div>
+        `;
+        document.body.appendChild(gameOverModal);
+    }
 }
 
 // Start the game when the page loads
