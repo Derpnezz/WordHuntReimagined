@@ -109,7 +109,7 @@ class WordHuntGame {
         this.ctx.strokeStyle = '#6c757d'; // Bootstrap secondary color
         this.ctx.strokeRect(x + padding, y + padding, this.cellSize - 2*padding, this.cellSize - 2*padding);
         
-        // Draw letter
+        // Draw letter with better contrast
         if (this.grid[row] && this.grid[row][col]) {
             this.ctx.fillStyle = isSelected ? '#ffffff' : '#f8f9fa'; // White or light color
             this.ctx.font = `bold ${Math.floor(this.cellSize * 0.6)}px Arial`;
@@ -240,6 +240,24 @@ class WordHuntGame {
     isAdjacent(cell1, cell2) {
         const rowDiff = Math.abs(cell1.row - cell2.row);
         const colDiff = Math.abs(cell1.col - cell2.col);
+        
+        // Calculate the angle of movement
+        const angle = Math.atan2(cell2.row - cell1.row, cell2.col - cell1.col) * (180 / Math.PI);
+        const normalizedAngle = ((angle + 360) % 360); // Convert to 0-360 range
+        
+        // Define diagonal angles with bias zones (40° around each diagonal)
+        const isDiagonal = 
+            (normalizedAngle >= 25 && normalizedAngle <= 65) ||   // NE diagonal
+            (normalizedAngle >= 115 && normalizedAngle <= 155) || // SE diagonal
+            (normalizedAngle >= 205 && normalizedAngle <= 245) || // SW diagonal
+            (normalizedAngle >= 295 && normalizedAngle <= 335);   // NW diagonal
+            
+        // If movement is close to diagonal, enforce diagonal movement
+        if (isDiagonal) {
+            return rowDiff === 1 && colDiff === 1;
+        }
+        
+        // Otherwise allow both orthogonal and diagonal movement
         return rowDiff <= 1 && colDiff <= 1 && !(rowDiff === 0 && colDiff === 0);
     }
 
