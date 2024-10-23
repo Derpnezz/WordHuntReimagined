@@ -18,18 +18,25 @@ def new_grid():
     # Generate a 4x4 grid of random letters
     # Use more common letters with higher probability
     vowels = 'AEIOU'
-    consonants = 'BCDFGHJKLMNPQRSTVWXYZ'
-    grid = []
+    common_consonants = 'RSTLNBCDFGHMPW'  # More common consonants first
+    rare_consonants = 'JKQVXYZ'  # Less common consonants
     
+    grid = []
     for _ in range(4):
         row = []
         for _ in range(4):
-            if random.random() < 0.35:  # 35% chance of vowel
-                row.append(random.choice(vowels))
-            else:
-                row.append(random.choice(consonants))
+            rand = random.random()
+            if rand < 0.35:  # 35% chance of vowel
+                letter = random.choice(vowels)
+            elif rand < 0.85:  # 50% chance of common consonant
+                letter = random.choice(common_consonants)
+            else:  # 15% chance of rare consonant
+                letter = random.choice(rare_consonants)
+            row.append(letter)
         grid.append(row)
     
+    # Log the grid for debugging
+    print("Generated Grid:", grid)
     return jsonify({'grid': grid})
 
 @app.route('/validate/<word>')
