@@ -27,6 +27,77 @@ class WordHuntGame {
         this.initCanvas();
     }
 
+    showStartScreen() {
+        console.log('Showing start screen');
+        // Remove any existing start or game over modals first
+        const existingModals = document.querySelectorAll('.game-over-modal');
+        for (let i = 0; i < existingModals.length; i++) {
+            const modal = existingModals[i];
+            console.log('Removing existing modal');
+            modal.remove();
+        }
+
+        const startModal = document.createElement('div');
+        startModal.id = 'startModal';
+        startModal.className = 'game-over-modal';
+        startModal.innerHTML = `
+            <div class="game-over-content">
+                <h2>Word Hunt</h2>
+                <p>Find as many words as you can in 90 seconds!</p>
+                <button id="startGameBtn" class="btn btn-primary">Start Game</button>
+            </div>
+        `;
+        document.body.appendChild(startModal);
+
+        // Add click handler with debug logging
+        const startButton = document.getElementById('startGameBtn');
+        if (startButton) {
+            console.log('Adding start button click handler');
+            startButton.addEventListener('click', () => {
+                console.log('Start button clicked');
+                startModal.style.display = 'none';
+                startModal.remove();
+                console.log('Starting new game');
+                this.startNewGame();
+            });
+        } else {
+            console.error('Start button not found');
+        }
+    }
+
+    async startNewGame() {
+        console.log('Starting new game setup');
+        // Clean up any existing game over modal
+        const modals = document.querySelectorAll('.game-over-modal');
+        for (let i = 0; i < modals.length; i++) {
+            modals[i].remove();
+        }
+
+        if (this.timerInterval) clearInterval(this.timerInterval);
+        this.isGameOver = false;
+        
+        try {
+            const response = await fetch('/new-grid');
+            const data = await response.json();
+            console.log("Received grid data:", data);
+            
+            if (data && data.grid) {
+                this.grid = data.grid;
+                console.log("Grid array:", this.grid);
+                this.score = 0;
+                this.foundWords = new Set();
+                this.updateScore();
+                this.updateFoundWords();
+                this.drawGrid();
+                this.startTimer();
+            } else {
+                console.error("Invalid grid data received:", data);
+            }
+        } catch (error) {
+            console.error("Error fetching grid:", error);
+        }
+    }
+
     initCanvas() {
         this.canvas = document.getElementById('gameGrid');
         if (this.canvas) {
@@ -157,5 +228,183 @@ class WordHuntGame {
         }
     }
 
-    // ... rest of the game class implementation remains the same
-    [Rest of the file content remains unchanged]
+    handleMouseDown(e) {
+        if (this.isGameOver) return;
+        
+        const cell = this.getCellFromEvent(e);
+        if (cell) {
+            this.selectedCells = [cell];
+            this.currentWord = this.grid[cell.row][cell.col];
+            this.drawGrid();
+        }
+    }
+
+    handleMouseMove(e) {
+        if (this.isGameOver || this.selectedCells.length === 0) return;
+        
+        const cell = this.getCellFromEvent(e);
+        if (cell && !this.isCellSelected(cell.row, cell.col)) {
+            const lastCell = this.selectedCells[this.selectedCells.length - 1];
+            if (this.isAdjacent(lastCell, cell)) {
+                this.selectedCells.push(cell);
+                this.currentWord += this.grid[cell.row][cell.col];
+                this.drawGrid();
+            }
+        }
+    }
+
+    handleMouseUp() {
+        this.handleWordSubmission();
+    }
+
+    handleTouchStart(e) {
+        e.preventDefault();
+        this.handleMouseDown(e);
+    }
+
+    handleTouchMove(e) {
+        e.preventDefault();
+        this.handleMouseMove(e);
+    }
+
+    handleTouchEnd(e) {
+        e.preventDefault();
+        this.handleWordSubmission();
+    }
+
+    async handleWordSubmission() {
+        if (this.isGameOver || !this.currentWord || this.currentWord.length < 3) {
+            this.resetSelection();
+            return;
+        }
+
+        try {
+            const response = await fetch(`/validate/${this.currentWord}`);
+            const data = await response.json();
+            
+            if (data.valid && !this.foundWords.has(this.currentWord)) {
+                this.validWordSound.play();
+                this.foundWords.add(this.currentWord);
+                this.score += this.currentWord.length;
+                this.updateScore();
+                this.updateFoundWords();
+                this.showFeedback(true);
+            } else {
+                this.invalidWordSound.play();
+                this.showFeedback(false);
+            }
+        } catch (error) {
+            console.error("Error validating word:", error);
+        }
+
+        this.resetSelection();
+    }
+
+    resetSelection() {
+        this.selectedCells = [];
+        this.currentWord = '';
+        this.drawGrid();
+    }
+
+    isCellSelected(row, col) {
+        return this.selectedCells.some(cell => cell.row === row && cell.col === col);
+    }
+
+    updateScore() {
+        document.getElementById('score').textContent = this.score;
+    }
+
+    updateFoundWords() {
+        const wordsList = document.getElementById('foundWords');
+        wordsList.innerHTML = '';
+        const wordsArray = Array.from(this.foundWords);
+        wordsArray.sort();
+        for (let i = 0; i < wordsArray.length; i++) {
+            const word = wordsArray[i];
+            const li = document.createElement('li');
+            li.className = 'list-group-item';
+            li.textContent = `${word} (+${word.length})`;
+            wordsList.appendChild(li);
+        }
+    }
+
+    showFeedback(isValid) {
+        const cell = this.selectedCells[this.selectedCells.length - 1];
+        const x = cell.col * this.cellSize + this.cellSize/2;
+        const y = cell.row * this.cellSize + this.cellSize/2;
+        
+        const feedbackDiv = document.createElement('div');
+        feedbackDiv.className = `word-feedback ${isValid ? 'valid' : 'invalid'}`;
+        
+        if (isValid) {
+            feedbackDiv.textContent = `+${this.currentWord.length}`;
+            feedbackDiv.style.cssText = `
+                position: absolute;
+                left: ${x}px;
+                top: ${y}px;
+                transform: translate(-50%, -50%);
+                opacity: 0;
+                transition: all 0.3s ease-out;
+            `;
+        } else {
+            this.canvas.classList.add('shake');
+            setTimeout(() => this.canvas.classList.remove('shake'), 500);
+        }
+        
+        document.querySelector('.game-container').appendChild(feedbackDiv);
+        
+        if (isValid) {
+            requestAnimationFrame(() => {
+                feedbackDiv.style.transform = 'translate(-50%, -150%)';
+                feedbackDiv.style.opacity = '1';
+            });
+        }
+        
+        setTimeout(() => {
+            feedbackDiv.remove();
+        }, 1000);
+    }
+
+    startTimer() {
+        if (this.timerInterval) clearInterval(this.timerInterval);
+        
+        let timeLeft = this.gameTime;
+        const timerElement = document.getElementById('timer');
+        
+        const updateTimer = () => {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (timeLeft === 0) {
+                clearInterval(this.timerInterval);
+                this.isGameOver = true;
+                this.showGameOverScreen();
+            }
+            timeLeft--;
+        };
+
+        updateTimer();
+        this.timerInterval = setInterval(updateTimer, 1000);
+    }
+
+    showGameOverScreen() {
+        const gameOverModal = document.createElement('div');
+        gameOverModal.className = 'game-over-modal';
+        gameOverModal.innerHTML = `
+            <div class="game-over-content">
+                <h2>Game Over!</h2>
+                <p>Final Score: ${this.score}</p>
+                <p>Words Found: ${this.foundWords.size}</p>
+                <button class="btn btn-primary" onclick="window.game.showStartScreen()">Play Again</button>
+            </div>
+        `;
+        document.body.appendChild(gameOverModal);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, initializing game');
+    window.game = new WordHuntGame();
+    window.game.showStartScreen();
+});
