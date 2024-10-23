@@ -131,19 +131,55 @@ class WordHuntGame {
         const x = clientX - rect.left;
         const y = clientY - rect.top;
         
+        // Calculate cell position
         const col = Math.floor(x / this.cellSize);
         const row = Math.floor(y / this.cellSize);
         
-        if (row >= 0 && row < 4 && col >= 0 && col < 4) {
-            return { row, col };
+        // Check if position is within grid bounds
+        if (row < 0 || row >= 4 || col < 0 || col >= 4) return null;
+        
+        // Calculate relative position within cell
+        const padding = this.cellSize * 0.2; // 20% padding
+        const effectiveSize = this.cellSize * 0.6; // 60% of cell size
+        
+        // Calculate position relative to cell
+        const relativeX = x - Math.floor(x / this.cellSize) * this.cellSize;
+        const relativeY = y - Math.floor(y / this.cellSize) * this.cellSize;
+        
+        // Check if click is within the effective area
+        if (relativeX < padding || relativeX > this.cellSize - padding ||
+            relativeY < padding || relativeY > this.cellSize - padding) {
+            return null;
         }
-        return null;
+        
+        return { row, col };
     }
 
     isAdjacent(cell1, cell2) {
-        const rowDiff = Math.abs(cell1.row - cell2.row);
-        const colDiff = Math.abs(cell1.col - cell2.col);
-        return rowDiff <= 1 && colDiff <= 1 && !(rowDiff === 0 && colDiff === 0);
+        const rowDiff = cell2.row - cell1.row;
+        const colDiff = cell2.col - cell1.col;
+        
+        // Calculate angle between cells
+        const angle = Math.atan2(rowDiff, colDiff) * (180 / Math.PI);
+        const distance = Math.sqrt(rowDiff * rowDiff + colDiff * colDiff);
+        
+        // Check if cells are too far apart
+        if (distance > Math.SQRT2) return false;
+        
+        // Bias towards diagonal movement when near 45° angles
+        const isDiagonal = Math.abs(Math.abs(angle) - 45) < 22.5 || 
+                          Math.abs(Math.abs(angle) - 135) < 22.5;
+        
+        if (isDiagonal) {
+            return Math.abs(rowDiff) === 1 && Math.abs(colDiff) === 1;
+        }
+        
+        // Stricter detection for horizontal/vertical movement
+        const isHorizontal = Math.abs(angle) < 22.5 || Math.abs(angle) > 157.5;
+        const isVertical = Math.abs(Math.abs(angle) - 90) < 22.5;
+        
+        return (isHorizontal && Math.abs(colDiff) === 1 && rowDiff === 0) ||
+               (isVertical && Math.abs(rowDiff) === 1 && colDiff === 0);
     }
 
     drawGrid() {
@@ -186,19 +222,22 @@ class WordHuntGame {
 
         const x = col * this.cellSize;
         const y = row * this.cellSize;
-        const padding = 2;
+        const padding = this.cellSize * 0.2; // 20% padding
         
         const isSelected = this.selectedCells.some(cell => cell.row === row && cell.col === col);
         
+        // Draw cell background
         this.ctx.fillStyle = isSelected ? '#0d6efd' : '#212529';
         this.ctx.fillRect(x + padding, y + padding, this.cellSize - 2*padding, this.cellSize - 2*padding);
         
+        // Draw cell border
         this.ctx.strokeStyle = '#6c757d';
         this.ctx.strokeRect(x + padding, y + padding, this.cellSize - 2*padding, this.cellSize - 2*padding);
         
+        // Draw letter
         if (this.grid[row] && this.grid[row][col]) {
             this.ctx.fillStyle = isSelected ? '#ffffff' : '#f8f9fa';
-            this.ctx.font = `bold ${Math.floor(this.cellSize * 0.6)}px Arial`;
+            this.ctx.font = `bold ${Math.floor(this.cellSize * 0.4)}px Arial`; // Smaller font
             this.ctx.textAlign = 'center';
             this.ctx.textBaseline = 'middle';
             this.ctx.fillText(
