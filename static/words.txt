@@ -522,4 +522,3 @@ WROTE
 YIELD
 YOUNG
 YOUTH
-[Add more words from Game Pigeon's database...]
