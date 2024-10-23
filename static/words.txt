@@ -1,0 +1,9 @@
+[Note: This file should contain a list of valid English words, one per line. You'll need to provide a dictionary file with at least several thousand common English words. For example:]
+
+THE
+THERE
+THEIR
+ABOUT
+WOULD
+THESE
+...

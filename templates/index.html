@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Hunt</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container py-4">
+        <div class="row">
+            <div class="col-md-8">
+                <h1 class="mb-4">Word Hunt</h1>
+                <div class="game-container">
+                    <canvas id="gameGrid" width="400" height="400"></canvas>
+                    <div class="game-overlay">
+                        <div id="timer" class="timer">3:00</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="score-container">
+                    <h3>Score: <span id="score">0</span></h3>
+                    <div class="word-list">
+                        <h4>Found Words</h4>
+                        <ul id="foundWords" class="list-group">
+                        </ul>
+                    </div>
+                </div>
+                <button id="newGame" class="btn btn-primary mt-3">New Game</button>
+            </div>
+        </div>
+    </div>
+    <script src="/static/js/game.js"></script>
+</body>
+</html>
