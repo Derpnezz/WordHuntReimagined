@@ -2,7 +2,7 @@
     position: relative;
     width: 400px;
     height: 400px;
-    margin: 0 auto;
+    margin: 20px auto;
 }
 
 #gameGrid {
@@ -11,19 +11,19 @@
     background-color: var(--bs-dark);
 }
 
-.game-overlay {
-    position: absolute;
-    top: 10px;
-    right: 10px;
+.timer-container {
+    text-align: center;
+    margin-bottom: 15px;
 }
 
 .timer {
-    font-size: 24px;
+    font-size: 32px;
     font-weight: bold;
     color: var(--bs-info);
     background-color: var(--bs-dark);
-    padding: 5px 10px;
-    border-radius: 4px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    display: inline-block;
 }
 
 .word-list {
@@ -35,27 +35,31 @@
     animation: fadeIn 0.3s ease-in;
 }
 
-.feedback {
+.word-feedback {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
     font-size: 24px;
     font-weight: bold;
-    padding: 10px 20px;
-    border-radius: 8px;
-    animation: feedbackAnimation 1s ease-out;
     pointer-events: none;
+    z-index: 100;
 }
 
-.feedback.valid {
+.word-feedback.valid {
     color: var(--bs-success);
-    background-color: rgba(var(--bs-success-rgb), 0.2);
 }
 
-.feedback.invalid {
-    color: var(--bs-danger);
-    background-color: rgba(var(--bs-danger-rgb), 0.2);
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.shake {
+    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
 }
 
 .game-over-modal {
@@ -77,15 +81,4 @@
     border-radius: 8px;
     text-align: center;
     border: 2px solid var(--bs-secondary);
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes feedbackAnimation {
-    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-    20% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
-    100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
 }

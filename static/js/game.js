@@ -245,20 +245,27 @@ class WordHuntGame {
         const angle = Math.atan2(cell2.row - cell1.row, cell2.col - cell1.col) * (180 / Math.PI);
         const normalizedAngle = ((angle + 360) % 360); // Convert to 0-360 range
         
-        // Define diagonal angles with bias zones (40° around each diagonal)
+        // Define narrower diagonal angles (30° around each diagonal instead of 40°)
         const isDiagonal = 
-            (normalizedAngle >= 25 && normalizedAngle <= 65) ||   // NE diagonal
-            (normalizedAngle >= 115 && normalizedAngle <= 155) || // SE diagonal
-            (normalizedAngle >= 205 && normalizedAngle <= 245) || // SW diagonal
-            (normalizedAngle >= 295 && normalizedAngle <= 335);   // NW diagonal
+            (normalizedAngle >= 35 && normalizedAngle <= 55) ||   // NE diagonal
+            (normalizedAngle >= 125 && normalizedAngle <= 145) || // SE diagonal
+            (normalizedAngle >= 215 && normalizedAngle <= 235) || // SW diagonal
+            (normalizedAngle >= 305 && normalizedAngle <= 325);   // NW diagonal
             
-        // If movement is close to diagonal, enforce diagonal movement
+        // Prioritize diagonal movement with narrower zones
         if (isDiagonal) {
             return rowDiff === 1 && colDiff === 1;
         }
         
-        // Otherwise allow both orthogonal and diagonal movement
-        return rowDiff <= 1 && colDiff <= 1 && !(rowDiff === 0 && colDiff === 0);
+        // For non-diagonal movement, require more precise alignment
+        if (rowDiff === 0) { // Horizontal movement
+            return colDiff === 1 && Math.abs(normalizedAngle % 180) < 15;
+        }
+        if (colDiff === 0) { // Vertical movement
+            return rowDiff === 1 && (Math.abs(normalizedAngle - 90) < 15 || Math.abs(normalizedAngle - 270) < 15);
+        }
+        
+        return false; // Reject ambiguous movements
     }
 
     isCellSelected(row, col) {
@@ -284,10 +291,39 @@ class WordHuntGame {
     }
 
     showFeedback(isValid) {
+        const cell = this.selectedCells[this.selectedCells.length - 1];
+        const x = cell.col * this.cellSize + this.cellSize/2;
+        const y = cell.row * this.cellSize + this.cellSize/2;
+        
+        // Create feedback element
         const feedbackDiv = document.createElement('div');
-        feedbackDiv.className = `feedback ${isValid ? 'valid' : 'invalid'}`;
-        feedbackDiv.textContent = isValid ? '+' + this.currentWord.length : 'Invalid';
+        feedbackDiv.className = `word-feedback ${isValid ? 'valid' : 'invalid'}`;
+        
+        if (isValid) {
+            feedbackDiv.textContent = `+${this.currentWord.length}`;
+            feedbackDiv.style.cssText = `
+                position: absolute;
+                left: ${x}px;
+                top: ${y}px;
+                transform: translate(-50%, -50%);
+                opacity: 0;
+                transition: all 0.3s ease-out;
+            `;
+        } else {
+            // For invalid words, add shake animation to the selected path
+            this.canvas.classList.add('shake');
+            setTimeout(() => this.canvas.classList.remove('shake'), 500);
+        }
+        
         document.querySelector('.game-container').appendChild(feedbackDiv);
+        
+        // Trigger animation
+        if (isValid) {
+            requestAnimationFrame(() => {
+                feedbackDiv.style.transform = 'translate(-50%, -150%)';
+                feedbackDiv.style.opacity = '1';
+            });
+        }
         
         setTimeout(() => {
             feedbackDiv.remove();
