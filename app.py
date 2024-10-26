@@ -1,10 +1,12 @@
 from flask import Flask, render_template, jsonify, request, session
 from flask_socketio import SocketIO, emit, join_room, leave_room
+from flask_sqlalchemy import SQLAlchemy
 import random
 import string
 from game_utils import load_dictionary, is_valid_word
 import logging
 import secrets
+import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -12,7 +14,28 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 app.secret_key = "word_hunt_secret_key"
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 socketio = SocketIO(app)
+db = SQLAlchemy(app)
+
+# Define HighScore model
+class HighScore(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    player_id = db.Column(db.String(50), nullable=False)
+    score = db.Column(db.Integer, nullable=False)
+    played_at = db.Column(db.DateTime, server_default=db.func.now())
+
+    def to_dict(self):
+        return {
+            'player_id': self.player_id,
+            'score': self.score,
+            'played_at': self.played_at.strftime('%Y-%m-%d %H:%M:%S')
+        }
+
+# Create tables
+with app.app_context():
+    db.create_all()
 
 # Load dictionary on startup
 WORD_DICT = load_dictionary()
@@ -26,6 +49,11 @@ def index():
     if 'user_id' not in session:
         session['user_id'] = secrets.token_urlsafe(8)
     return render_template('index.html')
+
+@app.route('/leaderboard')
+def leaderboard():
+    top_scores = HighScore.query.order_by(HighScore.score.desc()).limit(10).all()
+    return jsonify([score.to_dict() for score in top_scores])
 
 @app.route('/new-grid')
 def new_grid():
@@ -137,9 +165,20 @@ def handle_game_over(data):
     if room_id in game_rooms:
         scores = game_rooms[room_id]['scores']
         winner = max(scores.items(), key=lambda x: x[1])
+        
+        # Save scores to leaderboard
+        for player_id, score in scores.items():
+            high_score = HighScore(player_id=player_id, score=score)
+            db.session.add(high_score)
+        db.session.commit()
+        
+        # Get updated leaderboard
+        top_scores = HighScore.query.order_by(HighScore.score.desc()).limit(10).all()
+        
         emit('game_ended', {
             'winner': winner[0],
-            'final_scores': scores
+            'final_scores': scores,
+            'leaderboard': [score.to_dict() for score in top_scores]
         }, room=room_id)
         del game_rooms[room_id]
 

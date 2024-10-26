@@ -19,17 +19,14 @@ class WordHuntGame {
             this.grid.push(row);
         }
         
-        // Initialize sounds
         this.validWordSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiDQA0Yb8Pv4pVQGxNguu/tpmEjGlSs6/G0cSwgSZ7n8cF+NyY9jd/w0JJGLjJ23OnhpFwxKGDR6+2ycjUuRp3j7taJQDEsYsrrybKETCMVK3O3vpFxBwY0j9Tf0LWloIxuTyIWDhseNmurxt3s9/rZ0LWciGhKHRMPERIgL1eRttnz/vvYx6GTdVUqGg0LCRMhL06Hqsrw/v7i0LSfe2M2JBQMCg0YKE2EpsTt/f/r38i7loRvTDcZDQgMGCdDgp+/6v3/9OjRwqONdl9DMxgNChIiN0CAlrjn/P/78unYyrmklH5pUkIoHBUaJzpEaH+cxfL9/Pnx6eDav7Kgl4mAb19QQzkvLzQ6RVFcd5O4zvL29fHs5NzNvrGqpZyRhXlsYVdOQjkyNkBKVGVwgZ/D3Ojj393Z1MzBtKylopuTi4R5cWphWlJNRkBAQ0lPWWNziKjM3uPd2tfTzsW5sKynoZqUjYZ+d3BnYVxXUEpFQkJFTVZibICYxN3l39nV0s7Hura0raSelZCKhH15cmpkX1lTTklERUZLVF9xgpvF3OLc1tLPysS7t7Sup6GZk42HgXx2cGxnYltVTkhERUhQWmZ3iafN3N7Z1NDMx8G5tbGrpZ+YkYuGgHt1b2pmYFtVT0lFRUlSXmp8lLLW4d7Z087JxL+4tbCrpp+Xko2HgX16dG9rZmFcV1FLRkVIT1hldYmjxdvg3dbRzcfBvLi0r6unop2XkYyGgXt1cGxoY15ZU01IRUVKUlxufZS00d7e2dPPycO+urWxramnop6Zk46JgoB7dnFtaWVgW1VQSUZGS1BcbH2SsNDf39rU0MvGwLu3s6+sqKSgm5WQioR/enVwa2dlYFtWUEpGRUlPWmp7kK7P4N/b1dHMx8G8uLSwr6uppaGcl5KMhoF8d3JuamdkX1pUT0lFRUpRW2x+k7DQ397Z09DLxsC7t7Ovrauop6ObmJOOiYSAe3ZxbWllYFtVT0lGRktTXW5/lLHQ3t3Y0s/KxcC7t7SwsK6rqaegnpqWkY2IgoB6dXBsaGRfWlRPSkZGTFReb4CTr87d3dnTz8rFwLu4tLGvrqyrqaWjoZ2Zlo+LhYJ9eHNua2dhXFZRTEhGR05VYG+Bk67N3N3Z08/Lx8K9ubWysK+trKqopKGem5iRjYiFgHt2cW5rZ2JeWFJNSUdIUFZicYOVrc3b29jTz8vHw7+7t7SysK+trauopqShn5yXko6KhIB7dnFtaWVhXVhSTkpIT1VfcIGTq8vb3NnU0MzIxMC8ubazsbCvrq2rqaimop+bl5KOiYSAe3ZxbWllYV1YUk5KSE9VX3CBk6vL29vY09DMycXBvbm2tLKxsK+urauqp6WjoJyYk4+JhIB7dnFtaWViXVhSTkpIT1VfcIGTq8vb29jT0MzJxcG9ubWzsrGwr66trKqop6ShnpqVkIuGgXx3cm5qZmJeWVNPSkdNU19vgZOrzdvb2NPQzMnFwby4tbOysbCvrq2sq6mopaShnpqWkYyHgn14c29rZ2NgWlRPSkdNU19ugJKqzNzc2dTQzcrGwr25trSzsbCvrq6trKuqqKajop+bl5KNiISAe3dvbGhlYFtVUEtISE5WYHGElK3O3NzY087LyMTBvbq2tLOysbCvrq6trKuqqKekop+bl5KNiISAe3dvbGhlYFtVUEtISE5WYHGElK3O3NzY087LyMTBvbq2tLOysbCvrq6trKuqqKekop+bl5KNiISAe3dvbGhlYFtVUEtISE5WYHGElK3O3NzY087LyMTBvbq2tLOysbCvrq6trKuqqKekop+bl5KNiISAe3dvbGhlYFtVUEtISE5WYHGElK3O3NzY087LyMTBvbq2tLOysbCvrq6trKuqqKekop+bl5KNiISAe3dvbGhlYFtV');
         this.invalidWordSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiDQA0Yb8Pv4pVQGxNguu/tpmEjGlSs6/G0cSwgSZ7n8cF+NyY9jd/w0JJGLjJ23OnhpFwxKGDR6+2ycjUuRp3j7taJQDEsYsrrybKETCMVK3O3vpFxBwY0j9Tf0LWloIxuTyIWDhseNmurxt3s9/rZ0LWciGhKHRMPERIgL1eRttnz/vvYx6GTdVUqGg0LCRMhL06Hqsrw/v7i0LSfe2M2JBQMCg0YKE2EpsTt/f/r38i7loRvTDcZDQgMGCdDgp+/6v3/9OjRwqONdl9DMxgNChIiN0CAlrjn/P/78unYyrmklH5pUkIoHBUaJzpEaH+cxfL9/Pnx6eDav7Kgl4mAb19QQzkvLzQ6RVFcd5O4zvL29fHs5NzNvrGqpZyRhXlsYVdOQjkyNkBKVGVwgZ/D3Ojj393Z1MzBtKylopuTi4R5cWphWlJNRkBAQ0lPWWNziKjM3uPd2tfTzsW5sKynoZqUjYZ+d3BnYVxXUEpFQkJFTVZibICYxN3l39nV0s7Hura0raSelZCKhH15cmpkX1lTTklERUZLVF9xgpvF3OLc1tLPysS7t7Sup6GZk42HgXx2cGxnYltVTkhERUhQWmZ3iafN3N7Z1NDMx8G5tbGrpZ+YkYuGgHt1b2pmYFtVT0lFRUlSXmp8lLLW4d7Z087JxL+4tbCrpp+Xko2HgX16dG9rZmFcV1FLRkVIT1hldYmjxdvg3dbRzcfBvLi0r6unop2XkYyGgXt1cGxoY15ZU01IRUVKUlxufZS00d7e2dPPycO+urWxramnop6Zk46JgoB7dnFtaWVgW1VQSUZGS1BcbH2SsNDf39rU0MvGwLu3s6+sqKSgm5WQioR/enVwa2dlYFtWUEpGRUlPWmp7kK7P4N/b1dHMx8G8uLSwr6uppaGcl5KMhoF8d3JuamdkX1pUT0lFRUpRW2x+k7DQ397Z09DLxsC7t7Ovrauop6ObmJOOiYSAe3ZxbWllYFtVT0lGRktTXW5/lLHQ3t3Y0s/KxcC7t7SwsK6rqaegnpqWkY2IgoB6dXBsaGRfWlRPSkZGTFReb4CTr87d3dnTz8rFwLu4tLGvrqyrqaWjoZ2Zlo+LhYJ9eHNua2dhXFZRTEhGR05VYG+Bk67N3N3Z08/Lx8K9ubWysK+trKqopKGem5iRjYiFgHt2cW5rZ2JeWFJNSUdIUFZicYOVrc3b29jTz8vHw7+7t7SysK+trauopqShn5yXko6KhIB7dnFtaWVhXVhSTkpIT1VfcIGTq8vb3NnU0MzIxMC8ubazsbCvrq2rqaimop+bl5KOiYSAe3ZxbWllYV1YUk5KSE9VX3CBk6vL29vY09DMycXBvbm2tLKxsK+urauqp6WjoJyYk4+JhIB7dnFtaWViXVhSTkpIT1VfcIGTq8vb29jT0MzJxcG9ubWzsrGwr66trKqop6ShnpqVkIuGgXx3cm5qZmJeWVNPSkdNU19vgZOrzdvb2NPQzMnFwby4tbOysbCvrq2sq6mopaShnpqWkYyHgn14c29rZ2NgWlRPSkdNU19ugJKqzNzc2dTQzcrGwr25trSzsbCvrq6trKuqqKajop+bl5KNiISAe3dvbGhlYFtVUEtISE5WYHGElK3O3NzY087LyMTBvbq2tLOysbCvrq6trKuqqKekop+bl5KNiISAe3dvbGhlYFtVUEtISE5WYHGElK3O3NzY087LyMTBvbq2tLOysbCvrq6trKuqqKekop+bl5KNiISAe3dvbGhlYFtVUEtISE5WYHGElK3O3NzY087LyMTBvbq2tLOysbCvrq6trKuqqKekop+bl5KNiISAe3dvbGhlYFtVUEtISE5WYHGElK3O3NzY087LyMTBvbq2tLOysbCvrq6trKuqqKekop+bl5KNiISAe3dvbGhlYFtV');
 
-        // Initialize Socket.IO
         this.socket = io();
         this.roomId = null;
         this.userId = null;
         this.isHost = false;
 
-        // Bind event handlers
         var self = this;
         this.handleMouseDown = function(event) { self._handleMouseDown(event); };
         this.handleMouseMove = function(event) { self._handleMouseMove(event); };
@@ -49,6 +46,7 @@ class WordHuntGame {
         this.socket.on('connected', function(data) {
             self.userId = data.user_id;
             console.log('Connected with user ID:', self.userId);
+            self.loadLeaderboard();
         });
 
         this.socket.on('room_created', function(data) {
@@ -92,10 +90,9 @@ class WordHuntGame {
 
         this.socket.on('game_ended', function(data) {
             self.isGameOver = true;
-            self.showGameOver(data.winner === self.userId, data.final_scores);
+            self.showGameOver(data.winner === self.userId, data.final_scores, data.leaderboard);
         });
 
-        // Add click handlers for multiplayer buttons
         document.getElementById('createRoomBtn').addEventListener('click', function() {
             document.getElementById('menuOptions').style.display = 'none';
             document.getElementById('waitingRoom').style.display = 'block';
@@ -113,6 +110,31 @@ class WordHuntGame {
             if (self.roomId) {
                 self.socket.emit('start_game', { room_id: self.roomId });
             }
+        });
+    }
+
+    loadLeaderboard() {
+        var self = this;
+        fetch('/leaderboard')
+            .then(response => response.json())
+            .then(data => self.updateLeaderboardUI(data))
+            .catch(error => console.error('Error loading leaderboard:', error));
+    }
+
+    updateLeaderboardUI(scores) {
+        var leaderboardBody = document.getElementById('leaderboardBody');
+        if (!leaderboardBody) return;
+
+        leaderboardBody.innerHTML = '';
+        scores.forEach((score, index) => {
+            var row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${score.player_id === this.userId ? 'You' : 'Player ' + score.player_id.substring(0, 4)}</td>
+                <td>${score.score}</td>
+                <td>${new Date(score.played_at).toLocaleDateString()}</td>
+            `;
+            leaderboardBody.appendChild(row);
         });
     }
 
@@ -141,25 +163,42 @@ class WordHuntGame {
         });
     }
 
-    showGameOver(isWinner, finalScores) {
+    showGameOver(isWinner, finalScores, leaderboard) {
         var self = this;
         var modal = document.createElement('div');
         modal.className = 'game-over-modal';
+        
         var finalScoresHtml = '';
         Object.keys(finalScores).forEach(function(playerId) {
             finalScoresHtml += '<p>' + (playerId === self.userId ? 'You' : 'Opponent') + ': ' + finalScores[playerId] + '</p>';
         });
+
+        var leaderboardHtml = '<div class="mt-4"><h4>Top Scores</h4><div class="table-responsive"><table class="table table-dark">';
+        leaderboardHtml += '<thead><tr><th>Rank</th><th>Player</th><th>Score</th></tr></thead><tbody>';
         
-        modal.innerHTML = '\
-            <div class="game-over-content">\
-                <h2>' + (isWinner ? 'You Won!' : 'Game Over') + '</h2>\
-                <p>Final Scores:</p>\
-                <div class="final-scores">\
-                    ' + finalScoresHtml + '\
-                </div>\
-                <button class="btn btn-primary mt-3" onclick="location.reload()">Play Again</button>\
-            </div>\
-        ';
+        leaderboard.forEach((score, index) => {
+            leaderboardHtml += `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${score.player_id === self.userId ? 'You' : 'Player ' + score.player_id.substring(0, 4)}</td>
+                    <td>${score.score}</td>
+                </tr>
+            `;
+        });
+        
+        leaderboardHtml += '</tbody></table></div></div>';
+        
+        modal.innerHTML = `
+            <div class="game-over-content">
+                <h2>${isWinner ? 'You Won!' : 'Game Over'}</h2>
+                <p>Final Scores:</p>
+                <div class="final-scores">
+                    ${finalScoresHtml}
+                </div>
+                ${leaderboardHtml}
+                <button class="btn btn-primary mt-3" onclick="location.reload()">Play Again</button>
+            </div>
+        `;
         document.body.appendChild(modal);
     }
 
@@ -173,7 +212,6 @@ class WordHuntGame {
         this.drawGrid();
         this.startTimer();
         
-        // Reset UI elements
         document.getElementById('foundWords').innerHTML = '';
         document.getElementById('player1Score').textContent = 'You: 0';
         document.getElementById('player2Score').textContent = 'Opponent: 0';
@@ -212,15 +250,12 @@ class WordHuntGame {
                 var x = col * this.cellSize;
                 var y = row * this.cellSize;
                 
-                // Draw cell background
                 this.ctx.fillStyle = this.isSelectedCell(row, col) ? '#4a5568' : '#1a202c';
                 this.ctx.fillRect(x, y, this.cellSize, this.cellSize);
                 
-                // Draw cell border
                 this.ctx.strokeStyle = '#2d3748';
                 this.ctx.strokeRect(x, y, this.cellSize, this.cellSize);
                 
-                // Draw letter
                 this.ctx.fillStyle = '#ffffff';
                 this.ctx.font = 'bold 48px Arial';
                 this.ctx.textAlign = 'center';
@@ -233,7 +268,6 @@ class WordHuntGame {
             }
         }
         
-        // Draw line through selected cells
         if (this.selectedCells.length > 1) {
             this.ctx.beginPath();
             this.ctx.strokeStyle = '#4299e1';
@@ -291,7 +325,6 @@ class WordHuntGame {
     }
 
     _handleMouseDown(event) {
-        console.log('Mouse down event');
         if (!this.isPlaying) return;
         var cell = this.getCellFromEvent(event);
         if (cell) {
@@ -353,14 +386,12 @@ class WordHuntGame {
         var rowDiff = Math.abs(cell.row - lastCell.row);
         var colDiff = Math.abs(cell.col - lastCell.col);
         
-        // Check if the cell is already selected
         for (var i = 0; i < this.selectedCells.length; i++) {
             if (this.selectedCells[i].row === cell.row && this.selectedCells[i].col === cell.col) {
                 return false;
             }
         }
         
-        // Check if the cell is adjacent (including diagonals)
         return rowDiff <= 1 && colDiff <= 1;
     }
 
