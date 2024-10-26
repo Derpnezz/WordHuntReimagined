@@ -40,7 +40,36 @@ class WordHuntGame {
         
         this.setupEventListeners();
         this.setupSocketListeners();
+        this.loadHighScores();
         console.log('WordHuntGame initialized');
+    }
+
+    async loadHighScores() {
+        try {
+            const response = await fetch('/high-scores');
+            const scores = await response.json();
+            this.updateLeaderboard(scores);
+        } catch (error) {
+            console.error("Error loading high scores:", error);
+        }
+    }
+
+    updateLeaderboard(scores) {
+        const leaderboardBody = document.getElementById('leaderboardBody');
+        if (!leaderboardBody) return;
+
+        leaderboardBody.innerHTML = '';
+        scores.forEach((score, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${score.player_id === this.userId ? 'You' : 'Player ' + score.player_id.slice(0, 4)}</td>
+                <td>${score.score}</td>
+                <td>${score.word_count}</td>
+                <td>${score.timestamp}</td>
+            `;
+            leaderboardBody.appendChild(row);
+        });
     }
 
     setupSocketListeners() {
@@ -49,6 +78,7 @@ class WordHuntGame {
         this.socket.on('connected', function(data) {
             self.userId = data.user_id;
             console.log('Connected with user ID:', self.userId);
+            self.loadHighScores(); // Refresh leaderboard after getting user ID
         });
 
         this.socket.on('room_created', function(data) {
@@ -93,6 +123,10 @@ class WordHuntGame {
         this.socket.on('game_ended', function(data) {
             self.isGameOver = true;
             self.showGameOver(data.winner === self.userId, data.final_scores);
+        });
+
+        this.socket.on('leaderboard_update', function(data) {
+            self.updateLeaderboard(data.high_scores);
         });
 
         // Add click handlers for multiplayer buttons
@@ -150,16 +184,16 @@ class WordHuntGame {
             finalScoresHtml += '<p>' + (playerId === self.userId ? 'You' : 'Opponent') + ': ' + finalScores[playerId] + '</p>';
         });
         
-        modal.innerHTML = '\
-            <div class="game-over-content">\
-                <h2>' + (isWinner ? 'You Won!' : 'Game Over') + '</h2>\
-                <p>Final Scores:</p>\
-                <div class="final-scores">\
-                    ' + finalScoresHtml + '\
-                </div>\
-                <button class="btn btn-primary mt-3" onclick="location.reload()">Play Again</button>\
-            </div>\
-        ';
+        modal.innerHTML = `
+            <div class="game-over-content">
+                <h2>${isWinner ? 'You Won!' : 'Game Over'}</h2>
+                <p>Final Scores:</p>
+                <div class="final-scores">
+                    ${finalScoresHtml}
+                </div>
+                <button class="btn btn-primary mt-3" onclick="location.reload()">Play Again</button>
+            </div>
+        `;
         document.body.appendChild(modal);
     }
 
@@ -291,7 +325,6 @@ class WordHuntGame {
     }
 
     _handleMouseDown(event) {
-        console.log('Mouse down event');
         if (!this.isPlaying) return;
         var cell = this.getCellFromEvent(event);
         if (cell) {
