@@ -3,16 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word Hunt</title>
+    <title>Word Hunt - Multiplayer</title>
     <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
     <link rel="stylesheet" href="/static/css/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 </head>
 <body>
     <div id="startModal" class="game-over-modal">
         <div class="game-over-content">
-            <h2>Word Hunt</h2>
-            <p>Find as many words as you can in 90 seconds!</p>
-            <button id="startGameBtn" class="btn btn-primary">Start Game</button>
+            <h2>Word Hunt - Multiplayer</h2>
+            <div id="menuOptions">
+                <button id="createRoomBtn" class="btn btn-primary mb-3">Create Room</button>
+                <div class="mb-3">
+                    <input type="text" id="roomIdInput" class="form-control mb-2" placeholder="Enter Room ID">
+                    <button id="joinRoomBtn" class="btn btn-secondary">Join Room</button>
+                </div>
+            </div>
+            <div id="waitingRoom" style="display: none;">
+                <h3>Room ID: <span id="roomIdDisplay"></span></h3>
+                <p>Players:</p>
+                <ul id="playersList" class="list-group mb-3"></ul>
+                <div id="hostControls" style="display: none;">
+                    <button id="startGameBtn" class="btn btn-primary" disabled>Start Game</button>
+                </div>
+            </div>
         </div>
     </div>
     <div class="container py-4">
@@ -28,14 +42,18 @@
             </div>
             <div class="col-md-4">
                 <div class="score-container">
-                    <h3>Score: <span id="score">0</span></h3>
+                    <div id="players-scores" class="mb-3">
+                        <h3>Scores</h3>
+                        <div id="player1Score" class="player-score"></div>
+                        <div id="player2Score" class="player-score"></div>
+                    </div>
                     <div class="word-list">
                         <h4>Found Words</h4>
                         <ul id="foundWords" class="list-group">
                         </ul>
                     </div>
                 </div>
-                <button id="newGame" class="btn btn-primary mt-3">New Game</button>
+                <button id="newGame" class="btn btn-primary mt-3">Leave Game</button>
             </div>
         </div>
     </div>
