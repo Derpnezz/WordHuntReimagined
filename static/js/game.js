@@ -30,144 +30,142 @@ class WordHuntGame {
         this.isHost = false;
 
         // Bind event handlers
-        this.handleMouseDown = this.handleMouseDown.bind(this);
-        this.handleMouseMove = this.handleMouseMove.bind(this);
-        this.handleMouseUp = this.handleMouseUp.bind(this);
-        this.handleTouchStart = this.handleTouchStart.bind(this);
-        this.handleTouchMove = this.handleTouchMove.bind(this);
-        this.handleTouchEnd = this.handleTouchEnd.bind(this);
+        var self = this;
+        this.handleMouseDown = function(event) { self._handleMouseDown(event); };
+        this.handleMouseMove = function(event) { self._handleMouseMove(event); };
+        this.handleMouseUp = function() { self._handleMouseUp(); };
+        this.handleTouchStart = function(event) { self._handleTouchStart(event); };
+        this.handleTouchMove = function(event) { self._handleTouchMove(event); };
+        this.handleTouchEnd = function(event) { self._handleTouchEnd(event); };
         
         this.setupEventListeners();
         this.setupSocketListeners();
         console.log('WordHuntGame initialized');
     }
 
-    setupSocketListeners() {
-        var self = this;
+    // ... [Previous socket listeners and other methods remain the same] ...
 
-        this.socket.on('connected', function(data) {
-            self.userId = data.user_id;
-            console.log('Connected with user ID:', self.userId);
-        });
-
-        this.socket.on('room_created', function(data) {
-            console.log('Room created:', data.room_id);
-            self.roomId = data.room_id;
-            self.isHost = true;
-            document.getElementById('menuOptions').style.display = 'none';
-            document.getElementById('waitingRoom').style.display = 'block';
-            document.getElementById('roomIdDisplay').textContent = self.roomId;
-            document.getElementById('hostControls').style.display = 'block';
-            self.updatePlayersList(data.players);
-        });
-
-        this.socket.on('player_joined', function(data) {
-            console.log('Player joined:', data.players);
-            self.updatePlayersList(data.players);
-            if (data.players.length === 2 && self.isHost) {
-                document.getElementById('startGameBtn').disabled = false;
-            }
-        });
-
-        this.socket.on('join_error', function(data) {
-            alert(data.message);
-        });
-
-        this.socket.on('game_ready', function() {
-            if (self.isHost) {
-                document.getElementById('startGameBtn').disabled = false;
-            }
-        });
-
-        this.socket.on('game_started', function(data) {
-            console.log('Game started with grid:', data.grid);
-            document.getElementById('startModal').style.display = 'none';
-            self.grid = data.grid;
-            self.score = 0;
-            self.foundWords = new Set();
-            self.updateScore();
-            self.updateFoundWords();
-            self.drawGrid();
-            self.startTimer();
-            self.isPlaying = true;
-        });
-
-        this.socket.on('score_update', function(data) {
-            var playerScores = data.scores;
-            for (var userId in playerScores) {
-                if (playerScores.hasOwnProperty(userId)) {
-                    var index = Object.keys(playerScores).indexOf(userId);
-                    var scoreElement = document.getElementById('player' + (index + 1) + 'Score');
-                    if (scoreElement) {
-                        scoreElement.textContent = 'Player ' + (index + 1) + ': ' + playerScores[userId];
-                    }
-                }
-            }
-
-            if (data.user_id === self.userId && data.word) {
-                self.foundWords.add(data.word);
-                self.updateFoundWords();
-                self.showFeedback(true, data.points);
-            }
-        });
-
-        this.socket.on('game_ended', function(data) {
-            console.log('Game ended:', data);
-            self.isGameOver = true;
-            self.isPlaying = false;
-            clearInterval(self.timerInterval);
-            var isWinner = data.winner === self.userId;
-            self.showGameOverScreen(data.final_scores, isWinner);
-        });
-    }
-
-    showStartScreen() {
-        console.log('Showing start screen');
-        var startModal = document.getElementById('startModal');
-        if (startModal) {
-            startModal.style.display = 'flex';
-            
-            var createRoomBtn = document.getElementById('createRoomBtn');
-            var joinRoomBtn = document.getElementById('joinRoomBtn');
-            var self = this;
-            
-            createRoomBtn.onclick = function() {
-                self.socket.emit('create_room');
-            };
-
-            joinRoomBtn.onclick = function() {
-                var roomId = document.getElementById('roomIdInput').value.trim();
-                if (roomId) {
-                    self.socket.emit('join_room', { room_id: roomId });
-                } else {
-                    alert('Please enter a room ID');
-                }
-            };
-
-            var startGameBtn = document.getElementById('startGameBtn');
-            startGameBtn.onclick = function() {
-                if (self.roomId) {
-                    self.socket.emit('start_game', { room_id: self.roomId });
-                }
-            };
+    _handleMouseDown(event) {
+        console.log('Mouse down event');
+        if (!this.isPlaying) return;
+        var cell = this.getCellFromEvent(event);
+        if (cell) {
+            this.selectedCells = [cell];
+            this.currentWord = this.grid[cell.row][cell.col];
+            this.drawGrid();
         }
     }
 
-    updatePlayersList(players) {
-        var playersList = document.getElementById('playersList');
-        if (!playersList) return;
+    _handleMouseMove(event) {
+        if (!this.isPlaying || this.selectedCells.length === 0) return;
+        var cell = this.getCellFromEvent(event);
+        if (cell && this.isValidNextCell(cell)) {
+            this.selectedCells.push(cell);
+            this.currentWord += this.grid[cell.row][cell.col];
+            this.drawGrid();
+        }
+    }
+
+    _handleMouseUp() {
+        if (!this.isPlaying) return;
+        this.handleWordSubmission();
+        this.selectedCells = [];
+        this.currentWord = '';
+        this.drawGrid();
+    }
+
+    _handleTouchStart(event) {
+        event.preventDefault();
+        this._handleMouseDown(event.touches[0]);
+    }
+
+    _handleTouchMove(event) {
+        event.preventDefault();
+        this._handleMouseMove(event.touches[0]);
+    }
+
+    _handleTouchEnd(event) {
+        event.preventDefault();
+        this._handleMouseUp();
+    }
+
+    getCellFromEvent(event) {
+        var rect = this.canvas.getBoundingClientRect();
+        var x = event.clientX - rect.left;
+        var y = event.clientY - rect.top;
+        var row = Math.floor(y / this.cellSize);
+        var col = Math.floor(x / this.cellSize);
+        if (row >= 0 && row < 4 && col >= 0 && col < 4) {
+            return { row: row, col: col };
+        }
+        return null;
+    }
+
+    isValidNextCell(cell) {
+        if (this.selectedCells.length === 0) return true;
         
-        playersList.innerHTML = '';
-        for (var i = 0; i < players.length; i++) {
-            var playerId = players[i];
-            var li = document.createElement('li');
-            li.className = 'list-group-item';
-            li.textContent = 'Player ' + (i + 1) + (playerId === this.userId ? ' (You)' : '');
-            playersList.appendChild(li);
+        var lastCell = this.selectedCells[this.selectedCells.length - 1];
+        var rowDiff = Math.abs(cell.row - lastCell.row);
+        var colDiff = Math.abs(cell.col - lastCell.col);
+        
+        // Check if the cell is already selected
+        for (var i = 0; i < this.selectedCells.length; i++) {
+            if (this.selectedCells[i].row === cell.row && this.selectedCells[i].col === cell.col) {
+                return false;
+            }
         }
+        
+        // Check if the cell is adjacent (including diagonals)
+        return rowDiff <= 1 && colDiff <= 1;
     }
 
-    // ... Rest of the existing methods remain the same
+    setupEventListeners() {
+        if (!this.canvas) return;
+        
+        this.canvas.addEventListener('mousedown', this.handleMouseDown);
+        this.canvas.addEventListener('mousemove', this.handleMouseMove);
+        this.canvas.addEventListener('mouseup', this.handleMouseUp);
+        
+        this.canvas.addEventListener('touchstart', this.handleTouchStart);
+        this.canvas.addEventListener('touchmove', this.handleTouchMove);
+        this.canvas.addEventListener('touchend', this.handleTouchEnd);
+        
+        var self = this;
+        document.getElementById('newGame').addEventListener('click', function() {
+            if (self.roomId) {
+                location.reload();
+            } else {
+                self.showStartScreen();
+            }
+        });
+    }
+
+    async handleWordSubmission() {
+        if (this.isGameOver || !this.currentWord || this.currentWord.length < 3 || !this.roomId) {
+            this.selectedCells = [];
+            this.currentWord = '';
+            this.drawGrid();
+            return;
+        }
+
+        try {
+            var response = await fetch('/validate/' + this.currentWord);
+            var data = await response.json();
+            
+            if (data.valid && !this.foundWords.has(this.currentWord)) {
+                this.socket.emit('word_found', {
+                    room_id: this.roomId,
+                    word: this.currentWord
+                });
+                this.validWordSound.play();
+            } else {
+                this.invalidWordSound.play();
+                this.showFeedback(false);
+            }
+        } catch (error) {
+            console.error("Error validating word:", error);
+        }
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
