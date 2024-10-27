@@ -257,7 +257,7 @@ class WordHuntGame {
                 feedbackText = 'Invalid';
             } else {
                 feedbackClass = 'invalid';
-                feedbackText = 'Invalid Word';
+                feedbackText = 'Invalid';
             }
         }
         
