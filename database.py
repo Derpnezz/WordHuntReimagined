@@ -18,12 +18,13 @@ def init_db():
     # Drop existing table if it exists
     cur.execute('DROP TABLE IF EXISTS high_scores')
     
-    # Create high scores table
+    # Create high scores table with game_mode column
     cur.execute('''
         CREATE TABLE IF NOT EXISTS high_scores (
             id SERIAL PRIMARY KEY,
             player_id VARCHAR(255) NOT NULL,
             score INTEGER NOT NULL,
+            game_mode VARCHAR(10) NOT NULL DEFAULT 'multi',
             game_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
@@ -35,29 +36,30 @@ def init_db():
     cur.close()
     conn.close()
 
-def save_high_score(player_id, score):
+def save_high_score(player_id, score, game_mode='multi'):
     conn = get_db_connection()
     cur = conn.cursor()
     
     cur.execute(
-        'INSERT INTO high_scores (player_id, score) VALUES (%s, %s)',
-        (player_id, score)
+        'INSERT INTO high_scores (player_id, score, game_mode) VALUES (%s, %s, %s)',
+        (player_id, score, game_mode)
     )
     
     conn.commit()
     cur.close()
     conn.close()
 
-def get_top_scores(limit=10):
+def get_top_scores(limit=10, game_mode='multi'):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=DictCursor)
     
     cur.execute('''
         SELECT player_id, score, game_date 
         FROM high_scores 
+        WHERE game_mode = %s
         ORDER BY score DESC 
         LIMIT %s
-    ''', (limit,))
+    ''', (game_mode, limit))
     
     scores = [dict(row) for row in cur.fetchall()]
     
