@@ -254,7 +254,7 @@ class WordHuntGame {
         if (!valid) {
             if (this.foundWords.has(this.currentWord)) {
                 feedbackClass = 'duplicate';
-                feedbackText = 'Already Found';
+                feedbackText = 'Invalid';
             } else {
                 feedbackClass = 'invalid';
                 feedbackText = 'Invalid Word';
