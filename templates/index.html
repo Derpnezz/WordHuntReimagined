@@ -13,6 +13,7 @@
             <h2>Word Hunt</h2>
             <div id="menuOptions">
                 <button id="playSoloBtn" class="btn btn-success mb-3 w-100">Play</button>
+                <button id="helpBtn" class="btn btn-info mb-3 w-100">How to Play</button>
             </div>
             
             <!-- Single Player Leaderboard -->
@@ -41,6 +42,30 @@
             </div>
         </div>
     </div>
+
+    <!-- Instructions Modal -->
+    <div id="instructionsModal" class="instructions-modal">
+        <div class="instructions-content">
+            <h2>How to Play Word Hunt</h2>
+            <ul class="instructions-list">
+                <li>Find words by connecting adjacent letters in any direction (horizontal, vertical, or diagonal).</li>
+                <li>Words must be at least 3 letters long.</li>
+                <li>You can't use the same letter cell more than once in a word.</li>
+                <li>Score points based on word length:
+                    <ul class="ms-4">
+                        <li>3 letters: 100 points</li>
+                        <li>4 letters: 400 points</li>
+                        <li>5 letters: 800 points</li>
+                        <li>6 letters: 1400 points</li>
+                    </ul>
+                </li>
+                <li>You have 80 seconds to find as many words as possible.</li>
+                <li>The game ends when the timer runs out.</li>
+            </ul>
+            <button id="closeInstructions" class="btn btn-primary mt-3">Got it!</button>
+        </div>
+    </div>
+
     <div class="container py-4">
         <div class="row">
             <div class="col-md-8">
