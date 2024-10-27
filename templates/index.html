@@ -11,7 +11,12 @@
 <body>
     <div id="startModal" class="game-over-modal">
         <div class="game-over-content">
-            <h2>Word Hunt</h2>
+            <div class="d-flex align-items-center">
+                <h2 class="mb-0">Word Hunt</h2>
+                <button id="helpBtn" class="btn btn-outline-info ms-3">
+                    <i class="bi bi-question-circle"></i>
+                </button>
+            </div>
             <div id="menuOptions">
                 <button id="playSoloBtn" class="btn btn-success mb-3 w-100">Play</button>
             </div>
@@ -71,12 +76,7 @@
     <div class="container py-4">
         <div class="row">
             <div class="col-md-8">
-                <div class="d-flex align-items-center mb-4">
-                    <h1 class="mb-0">Word Hunt</h1>
-                    <button id="helpBtn" class="btn btn-outline-info ms-3">
-                        <i class="bi bi-question-circle"></i>
-                    </button>
-                </div>
+                <h1>Word Hunt</h1>
                 <div class="timer-container">
                     <div id="timer" class="timer">1:20</div>
                     <div id="currentWordDisplay" class="current-word mt-2"></div>
