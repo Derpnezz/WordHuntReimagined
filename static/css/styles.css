@@ -1,3 +1,47 @@
+.game-container {
+    position: relative;
+    width: 400px;
+    height: 400px;
+    margin: 20px auto;
+}
+
+#gameGrid {
+    border: 2px solid var(--bs-secondary);
+    border-radius: 8px;
+    background-color: var(--bs-dark);
+}
+
+.timer-container {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.timer {
+    font-size: 32px;
+    font-weight: bold;
+    color: var(--bs-info);
+    background-color: var(--bs-dark);
+    padding: 8px 16px;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.current-word {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--bs-info);
+    min-height: 36px;
+}
+
+.word-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.word-list .list-group-item {
+    animation: fadeIn 0.3s ease-in;
+}
+
 .word-feedback {
     position: absolute;
     font-size: 24px;
@@ -5,10 +49,6 @@
     pointer-events: none;
     z-index: 100;
     transition: transform 0.2s ease-out;
-    background-color: var(--bs-dark);
-    padding: 5px 10px;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .word-feedback.valid {
@@ -26,4 +66,108 @@
     transform: translateY(-20px);
 }
 
-/* ... [rest of the CSS remains the same] ... */
+.player-score {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    background-color: var(--bs-dark);
+    border-radius: 4px;
+    border: 1px solid var(--bs-secondary);
+}
+
+.leaderboard {
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.leaderboard .table {
+    margin-bottom: 0;
+    background-color: var(--bs-dark);
+}
+
+.leaderboard th,
+.leaderboard td {
+    padding: 0.5rem;
+    text-align: center;
+}
+
+.game-over-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.game-over-content {
+    background-color: var(--bs-dark);
+    padding: 2rem;
+    border-radius: 8px;
+    max-width: 600px;
+    width: 90%;
+    text-align: center;
+}
+
+.instructions-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(var(--bs-dark-rgb), 0.9);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+}
+
+.instructions-content {
+    background-color: var(--bs-dark);
+    padding: 2rem;
+    border-radius: 8px;
+    max-width: 600px;
+    width: 90%;
+    border: 2px solid var(--bs-secondary);
+}
+
+.instructions-content h2 {
+    color: var(--bs-info);
+    margin-bottom: 1.5rem;
+}
+
+.instructions-list {
+    list-style: none;
+    padding: 0;
+}
+
+.instructions-list li {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: flex-start;
+}
+
+.instructions-list li::before {
+    content: "•";
+    color: var(--bs-info);
+    font-weight: bold;
+    margin-right: 0.5rem;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+}
+
+.shake {
+    animation: shake 0.2s cubic-bezier(0.36, 0, 0.66, 1) both;
+}
