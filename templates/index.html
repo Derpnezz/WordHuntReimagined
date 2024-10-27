@@ -13,13 +13,13 @@
         <div class="game-over-content">
             <h2>Word Hunt</h2>
             <div id="menuOptions">
-                <button id="playSoloBtn" class="btn btn-primary mb-3">Play Solo</button>
-                <hr>
-                <h3>Multiplayer</h3>
-                <button id="createRoomBtn" class="btn btn-primary mb-3">Create Room</button>
+                <button id="playSoloBtn" class="btn btn-success mb-3 w-100">Play Solo</button>
+                <hr class="my-4">
+                <h4>Multiplayer</h4>
+                <button id="createRoomBtn" class="btn btn-primary mb-3 w-100">Create Room</button>
                 <div class="mb-3">
                     <input type="text" id="roomIdInput" class="form-control mb-2" placeholder="Enter Room ID">
-                    <button id="joinRoomBtn" class="btn btn-secondary">Join Room</button>
+                    <button id="joinRoomBtn" class="btn btn-secondary w-100">Join Room</button>
                 </div>
             </div>
             <div id="waitingRoom" style="display: none;">
@@ -31,25 +31,23 @@
                 </div>
             </div>
             
-            <!-- Leaderboard with Tabs -->
-            <div class="leaderboard mt-4">
-                <h3>Leaderboard</h3>
-                <ul class="nav nav-tabs" id="leaderboardTabs" role="tablist">
+            <!-- Add separated Leaderboards -->
+            <div class="leaderboards mt-4">
+                <ul class="nav nav-tabs mb-3" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="solo-tab" data-bs-toggle="tab" data-bs-target="#solo-scores" 
-                                type="button" role="tab" aria-controls="solo-scores" aria-selected="true">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#singleplayer-scores" type="button">
                             Solo Scores
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="multi-tab" data-bs-toggle="tab" data-bs-target="#multi-scores" 
-                                type="button" role="tab" aria-controls="multi-scores" aria-selected="false">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#multiplayer-scores" type="button">
                             Multiplayer Scores
                         </button>
                     </li>
                 </ul>
-                <div class="tab-content" id="leaderboardTabContent">
-                    <div class="tab-pane fade show active" id="solo-scores" role="tabpanel" aria-labelledby="solo-tab">
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="singleplayer-scores">
+                        <h3>Top Solo Scores</h3>
                         <div class="table-responsive">
                             <table class="table table-dark table-striped">
                                 <thead>
@@ -59,12 +57,20 @@
                                         <th>Date</th>
                                     </tr>
                                 </thead>
-                                <tbody id="singleplayer-scores">
+                                <tbody>
+                                    {% for score in solo_scores %}
+                                    <tr>
+                                        <td>{{ loop.index }}</td>
+                                        <td>{{ score.score }}</td>
+                                        <td>{{ score.game_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    </tr>
+                                    {% endfor %}
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                    <div class="tab-pane fade" id="multi-scores" role="tabpanel" aria-labelledby="multi-tab">
+                    <div class="tab-pane fade" id="multiplayer-scores">
+                        <h3>Top Multiplayer Scores</h3>
                         <div class="table-responsive">
                             <table class="table table-dark table-striped">
                                 <thead>
@@ -74,7 +80,14 @@
                                         <th>Date</th>
                                     </tr>
                                 </thead>
-                                <tbody id="multiplayer-scores">
+                                <tbody>
+                                    {% for score in multi_scores %}
+                                    <tr>
+                                        <td>{{ loop.index }}</td>
+                                        <td>{{ score.score }}</td>
+                                        <td>{{ score.game_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    </tr>
+                                    {% endfor %}
                                 </tbody>
                             </table>
                         </div>
@@ -101,7 +114,7 @@
                         <div id="player1Score" class="player-score"></div>
                         <div id="player2Score" class="player-score"></div>
                     </div>
-                    <div class="found-words mb-3">
+                    <div id="foundWordsContainer">
                         <h3>Found Words</h3>
                         <ul id="foundWords" class="list-group word-list"></ul>
                     </div>
