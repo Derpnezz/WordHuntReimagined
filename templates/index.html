@@ -27,6 +27,31 @@
                     <button id="startGameBtn" class="btn btn-primary" disabled>Start Game</button>
                 </div>
             </div>
+            
+            <!-- Add Leaderboard -->
+            <div class="leaderboard mt-4">
+                <h3>Top Scores</h3>
+                <div class="table-responsive">
+                    <table class="table table-dark table-striped">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Score</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for score in top_scores %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ score.score }}</td>
+                                <td>{{ score.game_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
     <div class="container py-4">

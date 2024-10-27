@@ -5,6 +5,7 @@ import string
 from game_utils import load_dictionary, is_valid_word
 import logging
 import secrets
+from database import init_db, save_high_score, get_top_scores
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -13,6 +14,9 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 app.secret_key = "word_hunt_secret_key"
 socketio = SocketIO(app)
+
+# Initialize database
+init_db()
 
 # Load dictionary on startup
 WORD_DICT = load_dictionary()
@@ -25,7 +29,8 @@ game_rooms = {}
 def index():
     if 'user_id' not in session:
         session['user_id'] = secrets.token_urlsafe(8)
-    return render_template('index.html')
+    top_scores = get_top_scores()
+    return render_template('index.html', top_scores=top_scores)
 
 @app.route('/new-grid')
 def new_grid():
@@ -57,6 +62,11 @@ def validate_word(word):
     valid = is_valid_word(word, WORD_DICT)
     logger.info(f"Validating word: {word} - Result: {'valid' if valid else 'invalid'}")
     return jsonify({'valid': valid})
+
+@app.route('/leaderboard')
+def leaderboard():
+    top_scores = get_top_scores()
+    return jsonify(top_scores)
 
 # Socket.IO event handlers
 @socketio.on('connect')
@@ -137,6 +147,10 @@ def handle_game_over(data):
     if room_id in game_rooms:
         scores = game_rooms[room_id]['scores']
         winner = max(scores.items(), key=lambda x: x[1])
+        
+        # Save the winner's score to the leaderboard
+        save_high_score(winner[0], winner[1])
+        
         emit('game_ended', {
             'winner': winner[0],
             'final_scores': scores
