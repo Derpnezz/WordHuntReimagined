@@ -12,8 +12,9 @@ class WordHuntGame {
         this.isGameOver = false;
         this.grid = Array(4).fill().map(() => Array(4).fill(''));
         this.isMouseDown = false;
+        this.isSinglePlayer = false;
         
-        // Initialize Socket.IO
+        // Initialize Socket.IO for multiplayer
         this.socket = io();
         this.roomId = null;
         this.userId = null;
@@ -39,6 +40,11 @@ class WordHuntGame {
         document.getElementById('newGame').addEventListener('click', () => {
             window.location.reload();
         });
+
+        // Add Play Solo button handler
+        document.getElementById('playSoloBtn').addEventListener('click', () => {
+            this.startSoloGame();
+        });
     }
 
     setupSocketListeners() {
@@ -47,389 +53,56 @@ class WordHuntGame {
             console.log('Connected with user ID:', this.userId);
         });
 
-        this.socket.on('room_created', (data) => {
-            this.roomId = data.room_id;
-            this.isHost = true;
-            document.getElementById('menuOptions').style.display = 'none';
-            document.getElementById('waitingRoom').style.display = 'block';
-            document.getElementById('roomIdDisplay').textContent = this.roomId;
-            document.getElementById('hostControls').style.display = 'block';
-            this.updatePlayersList(data.players);
-        });
+        // ... existing socket listeners ...
+        [Previous content of socket listeners]
+    }
 
-        this.socket.on('player_joined', (data) => {
-            this.updatePlayersList(data.players);
-            if (data.players.length === 2 && this.isHost) {
-                document.getElementById('startGameBtn').disabled = false;
-            }
-        });
-
-        this.socket.on('join_error', (data) => {
-            alert(data.message);
-        });
-
-        this.socket.on('game_ready', () => {
-            if (this.isHost) {
-                document.getElementById('startGameBtn').disabled = false;
-            }
-        });
-
-        this.socket.on('game_started', (data) => {
-            document.getElementById('startModal').style.display = 'none';
-            this.grid = data.grid;
-            this.score = 0;
-            this.foundWords.clear();
-            this.updateScore();
-            this.updateFoundWords();
-            this.drawGrid();
-            this.startTimer();
-            this.isPlaying = true;
-        });
-
-        this.socket.on('score_update', (data) => {
-            const playerScores = data.scores;
-            Object.keys(playerScores).forEach((userId, index) => {
-                const scoreElement = document.getElementById('player' + (index + 1) + 'Score');
-                if (scoreElement) {
-                    scoreElement.textContent = 'Player ' + (index + 1) + ': ' + playerScores[userId];
-                }
-            });
-
-            if (data.user_id === this.userId && data.word) {
-                this.foundWords.add(data.word);
+    startSoloGame() {
+        this.isSinglePlayer = true;
+        document.getElementById('startModal').style.display = 'none';
+        
+        // Hide multiplayer-specific elements
+        document.getElementById('player2Score').style.display = 'none';
+        
+        // Initialize solo game
+        fetch('/new-grid')
+            .then(response => response.json())
+            .then(data => {
+                this.grid = data.grid;
+                this.score = 0;
+                this.foundWords.clear();
+                this.updateScore();
                 this.updateFoundWords();
-                this.showFeedback(true, data.points);
-            }
-        });
-
-        this.socket.on('game_ended', (data) => {
-            this.isGameOver = true;
-            this.isPlaying = false;
-            clearInterval(this.timerInterval);
-            const isWinner = data.winner === this.userId;
-            this.showGameOverScreen(data.final_scores, isWinner);
-            
-            // Refresh leaderboard after game ends
-            fetch('/leaderboard')
-                .then(response => response.json())
-                .then(scores => {
-                    const tbody = document.querySelector('.leaderboard tbody');
-                    tbody.innerHTML = '';
-                    scores.forEach((score, index) => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${index + 1}</td>
-                            <td>${score.score}</td>
-                            <td>${new Date(score.game_date).toLocaleString()}</td>
-                        `;
-                        tbody.appendChild(row);
-                    });
-                });
-        });
-    }
-
-    handleMouseDown(event) {
-        if (!this.isPlaying) return;
-        
-        this.isMouseDown = true;
-        const rect = this.canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        
-        const cell = this.getCellFromCoordinates(x, y);
-        if (cell) {
-            this.selectCell(cell);
-        }
-    }
-
-    handleMouseMove(event) {
-        if (!this.isMouseDown || !this.isPlaying) return;
-        
-        const rect = this.canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        
-        const cell = this.getCellFromCoordinates(x, y);
-        if (cell) {
-            this.selectCell(cell);
-        }
-    }
-
-    handleMouseUp() {
-        if (!this.isPlaying) return;
-        
-        this.isMouseDown = false;
-        this.handleWordSubmission();
-    }
-
-    handleTouchStart(event) {
-        if (!this.isPlaying) return;
-        event.preventDefault();
-        
-        const touch = event.touches[0];
-        const rect = this.canvas.getBoundingClientRect();
-        const x = touch.clientX - rect.left;
-        const y = touch.clientY - rect.top;
-        
-        const cell = this.getCellFromCoordinates(x, y);
-        if (cell) {
-            this.selectCell(cell);
-        }
-    }
-
-    handleTouchMove(event) {
-        if (!this.isPlaying) return;
-        event.preventDefault();
-        
-        const touch = event.touches[0];
-        const rect = this.canvas.getBoundingClientRect();
-        const x = touch.clientX - rect.left;
-        const y = touch.clientY - rect.top;
-        
-        const cell = this.getCellFromCoordinates(x, y);
-        if (cell) {
-            this.selectCell(cell);
-        }
-    }
-
-    handleTouchEnd(event) {
-        if (!this.isPlaying) return;
-        event.preventDefault();
-        this.handleWordSubmission();
+                this.drawGrid();
+                this.startTimer();
+                this.isPlaying = true;
+            });
     }
 
     getCellFromCoordinates(x, y) {
-        const row = Math.floor(y / this.cellSize);
-        const col = Math.floor(x / this.cellSize);
+        // Add 30% padding to make hitbox smaller
+        const padding = this.cellSize * 0.3;
+        const adjustedX = x - padding / 2;
+        const adjustedY = y - padding / 2;
+        const effectiveSize = this.cellSize - padding;
         
-        if (row >= 0 && row < 4 && col >= 0 && col < 4) {
+        const row = Math.floor(adjustedY / this.cellSize);
+        const col = Math.floor(adjustedX / this.cellSize);
+        
+        // Check if click is within the cell's effective area
+        const cellX = adjustedX - (col * this.cellSize);
+        const cellY = adjustedY - (row * this.cellSize);
+        
+        if (row >= 0 && row < 4 && col >= 0 && col < 4 &&
+            cellX >= padding/2 && cellX <= this.cellSize - padding/2 &&
+            cellY >= padding/2 && cellY <= this.cellSize - padding/2) {
             return { row, col };
         }
         return null;
     }
 
-    selectCell(cell) {
-        if (this.isValidSelection(cell)) {
-            this.selectedCells.push(cell);
-            this.currentWord = this.getWordFromSelection();
-            this.drawGrid();
-        }
-    }
-
-    isValidSelection(newCell) {
-        if (this.selectedCells.length === 0) return true;
-        
-        const lastCell = this.selectedCells[this.selectedCells.length - 1];
-        const rowDiff = Math.abs(newCell.row - lastCell.row);
-        const colDiff = Math.abs(newCell.col - lastCell.col);
-        
-        if (rowDiff <= 1 && colDiff <= 1) {
-            return !this.selectedCells.some(cell => 
-                cell.row === newCell.row && cell.col === newCell.col
-            );
-        }
-        return false;
-    }
-
-    getWordFromSelection() {
-        return this.selectedCells.map(cell => 
-            this.grid[cell.row][cell.col]
-        ).join('');
-    }
-
-    resetSelection() {
-        this.selectedCells = [];
-        this.currentWord = '';
-        this.drawGrid();
-    }
-
-    drawGrid() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        
-        // Draw cells and letters
-        for (let row = 0; row < 4; row++) {
-            for (let col = 0; col < 4; col++) {
-                const x = col * this.cellSize;
-                const y = row * this.cellSize;
-                
-                // Draw cell background
-                this.ctx.fillStyle = this.isSelected(row, col) ? '#3498db' : '#2c3e50';
-                this.ctx.fillRect(x, y, this.cellSize, this.cellSize);
-                
-                // Draw cell border
-                this.ctx.strokeStyle = '#34495e';
-                this.ctx.strokeRect(x, y, this.cellSize, this.cellSize);
-                
-                // Draw letter
-                if (this.grid[row][col]) {
-                    this.ctx.fillStyle = '#ffffff';
-                    this.ctx.font = 'bold 48px Arial';
-                    this.ctx.textAlign = 'center';
-                    this.ctx.textBaseline = 'middle';
-                    this.ctx.fillText(
-                        this.grid[row][col],
-                        x + this.cellSize / 2,
-                        y + this.cellSize / 2
-                    );
-                }
-            }
-        }
-        
-        // Draw lines connecting selected cells
-        if (this.selectedCells.length > 1) {
-            this.ctx.beginPath();
-            this.ctx.strokeStyle = '#ffffff';
-            this.ctx.lineWidth = 4;
-            
-            const firstCell = this.selectedCells[0];
-            this.ctx.moveTo(
-                firstCell.col * this.cellSize + this.cellSize / 2,
-                firstCell.row * this.cellSize + this.cellSize / 2
-            );
-            
-            for (let i = 1; i < this.selectedCells.length; i++) {
-                const cell = this.selectedCells[i];
-                this.ctx.lineTo(
-                    cell.col * this.cellSize + this.cellSize / 2,
-                    cell.row * this.cellSize + this.cellSize / 2
-                );
-            }
-            
-            this.ctx.stroke();
-        }
-    }
-
-    isSelected(row, col) {
-        return this.selectedCells.some(cell => 
-            cell.row === row && cell.col === col
-        );
-    }
-
-    showStartScreen() {
-        const startModal = document.getElementById('startModal');
-        if (startModal) {
-            startModal.style.display = 'flex';
-            
-            const createRoomBtn = document.getElementById('createRoomBtn');
-            const joinRoomBtn = document.getElementById('joinRoomBtn');
-            
-            createRoomBtn.onclick = () => {
-                this.socket.emit('create_room');
-            };
-
-            joinRoomBtn.onclick = () => {
-                const roomId = document.getElementById('roomIdInput').value.trim();
-                if (roomId) {
-                    this.socket.emit('join_room', { room_id: roomId });
-                } else {
-                    alert('Please enter a room ID');
-                }
-            };
-
-            const startGameBtn = document.getElementById('startGameBtn');
-            startGameBtn.onclick = () => {
-                if (this.roomId) {
-                    this.socket.emit('start_game', { room_id: this.roomId });
-                }
-            };
-        }
-    }
-
-    updatePlayersList(players) {
-        const playersList = document.getElementById('playersList');
-        if (!playersList) return;
-        
-        playersList.innerHTML = '';
-        players.forEach((playerId, index) => {
-            const li = document.createElement('li');
-            li.className = 'list-group-item';
-            li.textContent = 'Player ' + (index + 1) + (playerId === this.userId ? ' (You)' : '');
-            playersList.appendChild(li);
-        });
-    }
-
-    showGameOverScreen(finalScores, isWinner) {
-        const gameOverModal = document.createElement('div');
-        gameOverModal.className = 'game-over-modal';
-        
-        let scoresList = '';
-        Object.keys(finalScores).forEach((userId, index) => {
-            scoresList += '<p>Player ' + (index + 1) + ': ' + finalScores[userId] + 
-                         (userId === this.userId ? ' (You)' : '') + '</p>';
-        });
-
-        gameOverModal.innerHTML = `
-            <div class="game-over-content">
-                <h2>${isWinner ? 'You Won!' : 'Game Over!'}</h2>
-                <div class="final-scores mb-3">
-                    <h3>Final Scores:</h3>
-                    ${scoresList}
-                </div>
-                <button class="btn btn-primary" onclick="window.game.showStartScreen()">Play Again</button>
-            </div>
-        `;
-        document.body.appendChild(gameOverModal);
-    }
-
-    showFeedback(isValid, points = 0) {
-        const feedbackDiv = document.createElement('div');
-        feedbackDiv.className = 'word-feedback ' + (isValid ? 'valid' : '');
-        feedbackDiv.textContent = isValid ? `+${points}` : '✗';
-        
-        const rect = this.canvas.getBoundingClientRect();
-        feedbackDiv.style.left = rect.left + this.canvas.width / 2 + 'px';
-        feedbackDiv.style.top = rect.top + this.canvas.height / 2 + 'px';
-        
-        document.body.appendChild(feedbackDiv);
-        setTimeout(() => {
-            feedbackDiv.remove();
-        }, 1000);
-    }
-
-    updateScore() {
-        const playerScores = document.querySelectorAll('.player-score');
-        playerScores.forEach((scoreElement, index) => {
-            scoreElement.textContent = `Player ${index + 1}: ${this.score}`;
-        });
-    }
-
-    updateFoundWords() {
-        const foundWordsList = document.getElementById('foundWords');
-        foundWordsList.innerHTML = '';
-        
-        Array.from(this.foundWords).sort().forEach(word => {
-            const li = document.createElement('li');
-            li.className = 'list-group-item';
-            li.textContent = word;
-            foundWordsList.appendChild(li);
-        });
-    }
-
-    startTimer() {
-        if (this.timerInterval) clearInterval(this.timerInterval);
-        
-        let timeLeft = this.gameTime;
-        const timerElement = document.getElementById('timer');
-        
-        const updateTimer = () => {
-            const minutes = Math.floor(timeLeft / 60);
-            const seconds = timeLeft % 60;
-            timerElement.textContent = minutes + ':' + seconds.toString().padStart(2, '0');
-            
-            if (timeLeft === 0) {
-                clearInterval(this.timerInterval);
-                this.socket.emit('game_over', { room_id: this.roomId });
-                this.isGameOver = true;
-            }
-            timeLeft--;
-        };
-
-        updateTimer();
-        this.timerInterval = setInterval(updateTimer, 1000);
-    }
-
     async handleWordSubmission() {
-        if (this.isGameOver || !this.currentWord || this.currentWord.length < 3 || !this.roomId) {
+        if (this.isGameOver || !this.currentWord || this.currentWord.length < 3) {
             this.resetSelection();
             return;
         }
@@ -439,11 +112,22 @@ class WordHuntGame {
             const data = await response.json();
             
             if (data.valid && !this.foundWords.has(this.currentWord)) {
-                this.socket.emit('word_found', {
-                    room_id: this.roomId,
-                    word: this.currentWord
-                });
-                this.validWordSound.play();
+                const points = {3: 100, 4: 400, 5: 800, 6: 1400}[this.currentWord.length] || 0;
+                
+                if (this.isSinglePlayer) {
+                    this.score += points;
+                    this.foundWords.add(this.currentWord);
+                    this.updateScore();
+                    this.updateFoundWords();
+                    this.showFeedback(true, points);
+                    this.validWordSound.play();
+                } else {
+                    this.socket.emit('word_found', {
+                        room_id: this.roomId,
+                        word: this.currentWord
+                    });
+                    this.validWordSound.play();
+                }
             } else {
                 this.invalidWordSound.play();
                 this.showFeedback(false);
@@ -454,6 +138,93 @@ class WordHuntGame {
         
         this.resetSelection();
     }
+
+    showGameOverScreen(finalScores, isWinner) {
+        const gameOverModal = document.createElement('div');
+        gameOverModal.className = 'game-over-modal';
+        
+        let content;
+        if (this.isSinglePlayer) {
+            content = `
+                <div class="game-over-content">
+                    <h2>Game Over!</h2>
+                    <div class="final-scores mb-3">
+                        <h3>Final Score: ${this.score}</h3>
+                    </div>
+                    <button class="btn btn-primary" onclick="window.game.showStartScreen()">Play Again</button>
+                </div>
+            `;
+            
+            // Save solo score
+            fetch('/save-score', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    score: this.score,
+                    mode: 'solo'
+                })
+            }).then(() => this.updateLeaderboards());
+        } else {
+            let scoresList = '';
+            Object.keys(finalScores).forEach((userId, index) => {
+                scoresList += '<p>Player ' + (index + 1) + ': ' + finalScores[userId] + 
+                             (userId === this.userId ? ' (You)' : '') + '</p>';
+            });
+
+            content = `
+                <div class="game-over-content">
+                    <h2>${isWinner ? 'You Won!' : 'Game Over!'}</h2>
+                    <div class="final-scores mb-3">
+                        <h3>Final Scores:</h3>
+                        ${scoresList}
+                    </div>
+                    <button class="btn btn-primary" onclick="window.game.showStartScreen()">Play Again</button>
+                </div>
+            `;
+        }
+        
+        gameOverModal.innerHTML = content;
+        document.body.appendChild(gameOverModal);
+        
+        // Update leaderboards
+        this.updateLeaderboards();
+    }
+
+    updateLeaderboards() {
+        fetch('/leaderboard')
+            .then(response => response.json())
+            .then(data => {
+                const soloTbody = document.querySelector('#singleplayer-scores tbody');
+                const multiTbody = document.querySelector('#multiplayer-scores tbody');
+                
+                soloTbody.innerHTML = '';
+                multiTbody.innerHTML = '';
+                
+                data.solo_scores.forEach((score, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${score.score}</td>
+                        <td>${new Date(score.game_date).toLocaleString()}</td>
+                    `;
+                    soloTbody.appendChild(row);
+                });
+                
+                data.multi_scores.forEach((score, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${score.score}</td>
+                        <td>${new Date(score.game_date).toLocaleString()}</td>
+                    `;
+                    multiTbody.appendChild(row);
+                });
+            });
+    }
+
+    // ... rest of the existing methods ...
 }
 
 document.addEventListener('DOMContentLoaded', function() {
