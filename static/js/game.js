@@ -289,7 +289,7 @@ class WordHuntGame {
         
         setTimeout(() => {
             feedback.remove();
-        }, 1000);
+        }, 500); // Changed from 1000ms to 500ms
     }
 
     showGameOverScreen() {
