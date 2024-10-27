@@ -24,6 +24,7 @@
                         <thead>
                             <tr>
                                 <th>Rank</th>
+                                <th>Player</th>
                                 <th>Score</th>
                                 <th>Date</th>
                             </tr>
@@ -32,6 +33,7 @@
                             {% for score in solo_scores %}
                             <tr>
                                 <td>{{ loop.index }}</td>
+                                <td>{{ score.player_name }}</td>
                                 <td>{{ score.score }}</td>
                                 <td>{{ score.game_date.strftime('%m-%d-%Y') }}</td>
                             </tr>
@@ -77,6 +79,7 @@
                 </div>
                 <div class="timer-container">
                     <div id="timer" class="timer">1:20</div>
+                    <div id="currentWordDisplay" class="current-word mt-2"></div>
                 </div>
                 <div class="game-container">
                     <canvas id="gameGrid" width="400" height="400"></canvas>

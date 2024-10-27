@@ -26,6 +26,13 @@
     display: inline-block;
 }
 
+.current-word {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--bs-info);
+    min-height: 36px;
+}
+
 .word-list {
     max-height: 300px;
     overflow-y: auto;
@@ -41,22 +48,17 @@
     font-weight: bold;
     pointer-events: none;
     z-index: 100;
+    transition: transform 0.2s ease-out;
 }
 
 .word-feedback.valid {
     color: var(--bs-success);
+    transform: translateY(-20px);
 }
 
-.cursor-feedback {
-    position: fixed;
-    font-size: 24px;
-    font-weight: bold;
-    color: var(--bs-info);
-    pointer-events: none;
-    transform: translate(-50%, -50%);
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    display: none;
+.word-feedback.invalid {
+    color: var(--bs-danger);
+    transform: translateY(-20px);
 }
 
 .player-score {

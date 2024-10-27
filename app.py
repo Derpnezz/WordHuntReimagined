@@ -30,21 +30,6 @@ def index():
 
 @app.route('/new-grid')
 def new_grid():
-    # Generate a 4x4 grid of random letters
-    # Use more common letters with higher probability
-    #vowels = 'AEIOU'
-    #common_consonants = 'RSTLNBCDFGHMPW'  # More common consonants first
-    #rare_consonants = 'JKQVXYZ'  # Less common consonants
-
-    every = 'STE'
-    common = 'AINO'
-    rare = 'RLH'
-    rarer = 'CDM'
-    rarest = 'FW'
-    rarestest = 'BGKUY'
-    rarestestest = 'PQV'
-    almostnever = 'JXZ'
-
     LETTER_LIST = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
     occurence = np.array([17, 3, 8, 9, 20, 6, 3, 12, 17, (1/3), 3, 12, 9, 15, 17, 2, 2, 13, 19, 19, 3, 2, 7, (1/3), 3, (1/3)])
     totalOccurence = 222
@@ -55,25 +40,7 @@ def new_grid():
         row = []
         for _ in range(4):
             letter = random.choices(LETTER_LIST, weights)
-            #rand = random.random()
-            #rand = random.uniform(0, 30.93093093)
-            #if rand < 0.1501501502:  # % chances
-                #letter = random.choice(almostnever)
-            #elif rand < 1.051051051:  # 
-                #letter = random.choice(rarestestest)
-            #elif rand < 2.402402402:
-                #letter = random.choice(rarestest)
-            #elif rand < 5.33033033:
-                #letter = random.choice(rarest)
-            #lif rand < 9.234234234:
-                #letter = random.choice(rarer)
-           #elif rand < 14.78978979:
-               # letter = random.choice(rare)
-            #elif rand < 22.22222222:
-                #letter = random.choice(common)
-            #else:  # 10% chance of rare consonant
-                #letter = random.choice(every)
-            row.append(letter)
+            row.append(letter[0])
         grid.append(row)
     
     return jsonify({'grid': grid})
@@ -91,9 +58,11 @@ def save_score():
         data = request.get_json()
         user_id = session.get('user_id')
         score = data.get('score')
+        player_name = data.get('player_name', 'Anonymous')
+        game_mode = data.get('mode', 'solo')
         
         if user_id and score:
-            save_high_score(user_id, score, 'solo')
+            save_high_score(user_id, player_name, score, game_mode)
             return jsonify({'success': True})
         
         return jsonify({'success': False, 'error': 'Invalid data'}), 400
