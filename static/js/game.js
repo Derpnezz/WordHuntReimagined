@@ -43,19 +43,16 @@ class WordHuntGame {
         this.canvas.addEventListener('touchmove', this.handleTouchMove);
         this.canvas.addEventListener('touchend', this.handleTouchEnd);
         
-        document.getElementById('newGame').addEventListener('click', () => {
+        document.getElementById('newGame')?.addEventListener('click', () => {
             window.location.reload();
         });
 
-        document.getElementById('playSoloBtn').addEventListener('click', () => {
+        document.getElementById('playSoloBtn')?.addEventListener('click', () => {
             this.startGame();
         });
 
-        document.getElementById('helpBtn').addEventListener('click', () => {
-            document.getElementById('instructionsModal').style.display = 'flex';
-        });
-
-        document.getElementById('closeInstructions').addEventListener('click', () => {
+        // Close instructions button
+        document.getElementById('closeInstructions')?.addEventListener('click', () => {
             document.getElementById('instructionsModal').style.display = 'none';
         });
     }
@@ -301,12 +298,19 @@ class WordHuntGame {
 
     showFeedback(valid, points) {
         const feedback = document.createElement('div');
-        feedback.className = `word-feedback ${valid ? 'valid' : ''}`;
+        feedback.className = `word-feedback ${valid ? 'valid' : 'invalid'}`;
         feedback.textContent = valid ? `+${points}` : 'Invalid';
         
+        // Use the last cell's position for feedback
+        const lastCell = this.selectedCells[this.selectedCells.length - 1];
+        if (!lastCell) return;
+        
         const rect = this.canvas.getBoundingClientRect();
-        feedback.style.left = `${rect.left + rect.width / 2}px`;
-        feedback.style.top = `${rect.top + rect.height / 2}px`;
+        const x = rect.left + (lastCell.col * this.cellSize) + (this.cellSize / 2);
+        const y = rect.top + (lastCell.row * this.cellSize) + (this.cellSize / 2);
+        
+        feedback.style.left = `${x}px`;
+        feedback.style.top = `${y}px`;
         
         document.body.appendChild(feedback);
         
@@ -405,4 +409,12 @@ class WordHuntGame {
 
 document.addEventListener('DOMContentLoaded', function() {
     window.game = new WordHuntGame();
+    
+    // Add help button listener here
+    const helpBtn = document.getElementById('helpBtn');
+    if (helpBtn) {
+        helpBtn.addEventListener('click', function() {
+            document.getElementById('instructionsModal').style.display = 'flex';
+        });
+    }
 });
