@@ -3,95 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word Hunt - Multiplayer</title>
+    <title>Word Hunt</title>
     <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
     <link rel="stylesheet" href="/static/css/styles.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 </head>
 <body>
     <div id="startModal" class="game-over-modal">
         <div class="game-over-content">
             <h2>Word Hunt</h2>
             <div id="menuOptions">
-                <button id="playSoloBtn" class="btn btn-success mb-3 w-100">Play Solo</button>
-                <hr class="my-4">
-                <h4>Multiplayer</h4>
-                <button id="createRoomBtn" class="btn btn-primary mb-3 w-100">Create Room</button>
-                <div class="mb-3">
-                    <input type="text" id="roomIdInput" class="form-control mb-2" placeholder="Enter Room ID">
-                    <button id="joinRoomBtn" class="btn btn-secondary w-100">Join Room</button>
-                </div>
-            </div>
-            <div id="waitingRoom" style="display: none;">
-                <h3>Room ID: <span id="roomIdDisplay"></span></h3>
-                <p>Players:</p>
-                <ul id="playersList" class="list-group mb-3"></ul>
-                <div id="hostControls" style="display: none;">
-                    <button id="startGameBtn" class="btn btn-primary" disabled>Start Game</button>
-                </div>
+                <button id="playSoloBtn" class="btn btn-success mb-3 w-100">Play</button>
             </div>
             
-            <!-- Add separated Leaderboards -->
+            <!-- Single Player Leaderboard -->
             <div class="leaderboards mt-4">
-                <ul class="nav nav-tabs mb-3" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#singleplayer-scores" type="button">
-                            Solo Scores
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#multiplayer-scores" type="button">
-                            Multiplayer Scores
-                        </button>
-                    </li>
-                </ul>
-                <div class="tab-content">
-                    <div class="tab-pane fade show active" id="singleplayer-scores">
-                        <h3>Top Solo Scores</h3>
-                        <div class="table-responsive">
-                            <table class="table table-dark table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Rank</th>
-                                        <th>Score</th>
-                                        <th>Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for score in solo_scores %}
-                                    <tr>
-                                        <td>{{ loop.index }}</td>
-                                        <td>{{ score.score }}</td>
-                                        <td>{{ score.game_date.strftime('%Y-%m-%d %H:%M') }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="tab-pane fade" id="multiplayer-scores">
-                        <h3>Top Multiplayer Scores</h3>
-                        <div class="table-responsive">
-                            <table class="table table-dark table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Rank</th>
-                                        <th>Score</th>
-                                        <th>Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for score in multi_scores %}
-                                    <tr>
-                                        <td>{{ loop.index }}</td>
-                                        <td>{{ score.score }}</td>
-                                        <td>{{ score.game_date.strftime('%Y-%m-%d %H:%M') }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                <h3>Top Scores</h3>
+                <div class="table-responsive">
+                    <table class="table table-dark table-striped">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Score</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="singleplayer-scores">
+                            {% for score in solo_scores %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ score.score }}</td>
+                                <td>{{ score.game_date.strftime('%m-%d-%Y') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -110,9 +55,8 @@
             <div class="col-md-4">
                 <div class="score-container">
                     <div id="players-scores" class="mb-3">
-                        <h3>Scores</h3>
+                        <h3>Score</h3>
                         <div id="player1Score" class="player-score"></div>
-                        <div id="player2Score" class="player-score"></div>
                     </div>
                     <div id="foundWordsContainer">
                         <h3>Found Words</h3>
