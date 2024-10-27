@@ -17,13 +17,13 @@ def process_words():
     valid_words = set()
     
     # Define a pattern for valid words (only letters, no special chars)
-    pattern = re.compile(r'^[A-Za-z]{3,6}$')
+    pattern = re.compile(r'^[A-Za-z]{3,9}$')
     
     for word in words:
         word = word.strip().upper()
         if pattern.match(word):
-            # Add words that are 3-6 letters long
-            if 3 <= len(word) <= 6:
+            # Add words that are 3-9 letters long
+            if 3 <= len(word) <= 9:
                 valid_words.add(word)
     
     # Sort words alphabetically

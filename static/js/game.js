@@ -246,7 +246,15 @@ class WordHuntGame {
             const data = await response.json();
             
             if (data.valid && !this.foundWords.has(this.currentWord)) {
-                const points = {3: 100, 4: 400, 5: 800, 6: 1400}[this.currentWord.length] || 0;
+                const points = {
+                    3: 100, 
+                    4: 400, 
+                    5: 800, 
+                    6: 1400,
+                    7: 1800,
+                    8: 2200,
+                    9: 2600
+                }[this.currentWord.length] || 0;
                 this.score += points;
                 this.foundWords.add(this.currentWord);
                 this.updateScore();
@@ -368,19 +376,21 @@ class WordHuntGame {
         fetch('/leaderboard')
             .then(response => response.json())
             .then(data => {
-                const soloTbody = document.querySelector('#singleplayer-scores tbody');
-                soloTbody.innerHTML = '';
-                
-                data.solo_scores.forEach((score, index) => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${index + 1}</td>
-                        <td>${score.player_name}</td>
-                        <td>${score.score}</td>
-                        <td>${new Date(score.game_date).toLocaleString()}</td>
-                    `;
-                    soloTbody.appendChild(row);
-                });
+                const soloTbody = document.querySelector('#singleplayer-scores');
+                if (soloTbody) {
+                    soloTbody.innerHTML = '';
+                    
+                    data.solo_scores.forEach((score, index) => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${index + 1}</td>
+                            <td>${score.player_name}</td>
+                            <td>${score.score}</td>
+                            <td>${new Date(score.game_date).toLocaleString()}</td>
+                        `;
+                        soloTbody.appendChild(row);
+                    });
+                }
             });
     }
 }
