@@ -1,8 +1,35 @@
-[Previous content remains the same until line 376]
-        let gameOverContent = '';
+class WordHuntGame {
+    constructor() {
+        this.canvas = document.getElementById('gameGrid');
+        this.ctx = this.canvas.getContext('2d');
+        this.cellSize = 100;
+        this.grid = [];
+        this.score = 0;
+        this.foundWords = new Set();
+        this.selectedCells = [];
+        this.currentWord = '';
+        this.isPlaying = false;
+        this.isSinglePlayer = false;
+        this.timer = null;
+        this.timeLeft = 80; // 80 seconds game duration
+        this.isMouseDown = false;
+        
+        // Set up event listeners
+        this.setupEventListeners();
+        
+        // Initialize Socket.IO
+        this.socket = io();
+        this.setupSocketListeners();
+    }
+
+    // ... [Previous methods remain unchanged] ...
+
+    showGameOverScreen(finalScores, isWinner) {
+        const gameOverModal = document.createElement('div');
+        gameOverModal.className = 'game-over-modal';
         
         if (this.isSinglePlayer) {
-            gameOverContent = `
+            gameOverModal.innerHTML = `
                 <div class="game-over-content">
                     <h2>Game Over!</h2>
                     <div class="final-scores mb-3">
@@ -29,7 +56,7 @@
                              (userId === this.userId ? ' (You)' : '') + '</p>';
             });
 
-            gameOverContent = `
+            gameOverModal.innerHTML = `
                 <div class="game-over-content">
                     <h2>${isWinner ? 'You Won!' : 'Game Over!'}</h2>
                     <div class="final-scores mb-3">
@@ -41,8 +68,54 @@
             `;
         }
         
-        gameOverModal.innerHTML = gameOverContent;
         document.body.appendChild(gameOverModal);
-        
         this.updateLeaderboards();
-[Rest of the file remains unchanged]
+    }
+
+    updateLeaderboards() {
+        fetch('/leaderboard')
+            .then(response => response.json())
+            .then(data => {
+                const soloTbody = document.querySelector('#singleplayer-scores tbody');
+                const multiTbody = document.querySelector('#multiplayer-scores tbody');
+                
+                soloTbody.innerHTML = '';
+                multiTbody.innerHTML = '';
+                
+                data.solo_scores.forEach((score, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${score.score}</td>
+                        <td>${new Date(score.game_date).toLocaleString()}</td>
+                    `;
+                    soloTbody.appendChild(row);
+                });
+                
+                data.multi_scores.forEach((score, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${score.score}</td>
+                        <td>${new Date(score.game_date).toLocaleString()}</td>
+                    `;
+                    multiTbody.appendChild(row);
+                });
+            });
+    }
+
+    updatePlayersList(players) {
+        const playersList = document.getElementById('playersList');
+        playersList.innerHTML = '';
+        players.forEach((playerId, index) => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item';
+            li.textContent = `Player ${index + 1}${playerId === this.userId ? ' (You)' : ''}`;
+            playersList.appendChild(li);
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    window.game = new WordHuntGame();
+});
