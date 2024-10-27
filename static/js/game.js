@@ -13,11 +13,6 @@ class WordHuntGame {
         this.timeLeft = 80; // 80 seconds game duration
         this.isMouseDown = false;
         
-        // Initialize cursor feedback element
-        this.cursorFeedback = document.createElement('div');
-        this.cursorFeedback.className = 'cursor-feedback';
-        document.body.appendChild(this.cursorFeedback);
-        
         // Initialize event listeners
         this.initializeEventListeners();
     }
@@ -68,7 +63,6 @@ class WordHuntGame {
         const cell = this.getCellFromCoordinates(x, y);
         if (cell) {
             this.selectCell(cell);
-            this.updateCursorFeedback(event);
         }
     }
 
@@ -80,14 +74,12 @@ class WordHuntGame {
         const cell = this.getCellFromCoordinates(x, y);
         if (cell) {
             this.selectCell(cell);
-            this.updateCursorFeedback(event);
         }
     }
 
     handleMouseUp() {
         if (!this.isPlaying) return;
         this.isMouseDown = false;
-        this.cursorFeedback.style.display = 'none';
         this.handleWordSubmission();
     }
 
@@ -101,7 +93,6 @@ class WordHuntGame {
         const cell = this.getCellFromCoordinates(x, y);
         if (cell) {
             this.selectCell(cell);
-            this.updateCursorFeedback(touch, true);
         }
     }
 
@@ -115,27 +106,13 @@ class WordHuntGame {
         const cell = this.getCellFromCoordinates(x, y);
         if (cell) {
             this.selectCell(cell);
-            this.updateCursorFeedback(touch, true);
         }
     }
 
     handleTouchEnd(event) {
         if (!this.isPlaying) return;
         event.preventDefault();
-        this.cursorFeedback.style.display = 'none';
         this.handleWordSubmission();
-    }
-
-    updateCursorFeedback(event, isTouch = false) {
-        if (!this.isPlaying || !this.currentWord) return;
-        
-        const x = isTouch ? event.clientX : event.clientX;
-        const y = isTouch ? event.clientY : event.clientY;
-        
-        this.cursorFeedback.style.display = 'block';
-        this.cursorFeedback.style.left = `${x}px`;
-        this.cursorFeedback.style.top = `${y}px`;
-        this.cursorFeedback.textContent = this.currentWord;
     }
 
     getCellFromCoordinates(x, y) {
@@ -311,7 +288,7 @@ class WordHuntGame {
         const gameOverModal = document.createElement('div');
         gameOverModal.className = 'game-over-modal';
         
-        const modalHTML = `
+        gameOverModal.innerHTML = `
             <div class="game-over-content">
                 <h2>Game Over!</h2>
                 <div class="final-scores mb-3">
@@ -325,26 +302,26 @@ class WordHuntGame {
             </div>
         `;
         
-        gameOverModal.innerHTML = modalHTML;
         document.body.appendChild(gameOverModal);
-        
-        // Add event listener for save button
+
         document.getElementById('saveScoreBtn').addEventListener('click', () => {
-            const playerName = document.getElementById('playerName').value.trim() || 'Anonymous';
-            fetch('/save-score', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    score: this.score,
-                    player_name: playerName,
-                    mode: 'solo'
-                })
-            }).then(() => {
-                this.updateLeaderboards();
-                window.location.reload();
-            });
+            const playerName = document.getElementById('playerName').value.trim();
+            if (playerName) {
+                fetch('/save-score', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        score: this.score,
+                        mode: 'solo',
+                        player_name: playerName
+                    })
+                }).then(() => {
+                    this.updateLeaderboards();
+                    window.location.reload();
+                });
+            }
         });
     }
 
@@ -409,15 +386,13 @@ class WordHuntGame {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize help buttons
-    const helpBtns = document.querySelectorAll('#helpBtn, #helpBtn2');
-    helpBtns.forEach(btn => {
-        if (btn) {
-            btn.addEventListener('click', function() {
-                document.getElementById('instructionsModal').style.display = 'flex';
-            });
-        }
-    });
+    // Initialize help button first
+    const helpBtn = document.getElementById('helpBtn');
+    if (helpBtn) {
+        helpBtn.addEventListener('click', function() {
+            document.getElementById('instructionsModal').style.display = 'flex';
+        });
+    }
 
     // Add close instructions button listener
     const closeInstructions = document.getElementById('closeInstructions');
@@ -434,14 +409,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (window.game) {
                 window.game.startGame();
             }
-        });
-    }
-
-    // Add new game button listener
-    const newGameBtn = document.getElementById('newGame');
-    if (newGameBtn) {
-        newGameBtn.addEventListener('click', function() {
-            window.location.reload();
         });
     }
 
