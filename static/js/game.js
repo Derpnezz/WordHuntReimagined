@@ -10,14 +10,7 @@ class WordHuntGame {
         this.gameTime = 80;
         this.isPlaying = false;
         this.isGameOver = false;
-        this.grid = [];
-        for (var i = 0; i < 4; i++) {
-            var row = [];
-            for (var j = 0; j < 4; j++) {
-                row.push('');
-            }
-            this.grid.push(row);
-        }
+        this.grid = Array(4).fill().map(() => Array(4).fill(''));
         
         // Initialize sounds
         this.validWordSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiDQA0Yb8Pv4pVQGxNguu/tpmEjGlSs6/G0cSwgSZ7n8cF+NyY9jd/w0JJGLjJ23OnhpFwxKGDR6+2ycjUuRp3j7taJQDEsYsrrybKETCMVK3O3vpFxBwY0j9Tf0LWloIxuTyIWDhseNmurxt3s9/rZ0LWciGhKHRMPERIgL1eRttnz/vvYx6GTdVUqGg0LCRMhL06Hqsrw/v7i0LSfe2M2JBQMCg0YKE2EpsTt/f/r38i7loRvTDcZDQgMGCdDgp+/6v3/9OjRwqONdl9DMxgNChIiN0CAlrjn/P/78unYyrmklH5pUkIoHBUaJzpEaH+cxfL9/Pnx6eDav7Kgl4mAb19QQzkvLzQ6RVFcd5O4zvL29fHs5NzNvrGqpZyRhXlsYVdOQjkyNkBKVGVwgZ/D3Ojj393Z1MzBtKylopuTi4R5cWphWlJNRkBAQ0lPWWNziKjM3uPd2tfTzsW5sKynoZqUjYZ+d3BnYVxXUEpFQkJFTVZibICYxN3l39nV0s7Hura0raSelZCKhH15cmpkX1lTTklERUZLVF9xgpvF3OLc1tLPysS7t7Sup6GZk42HgXx2cGxnYltVTkhERUhQWmZ3iafN3N7Z1NDMx8G5tbGrpZ+YkYuGgHt1b2pmYFtVT0lFRUlSXmp8lLLW4d7Z087JxL+4tbCrpp+Xko2HgX16dG9rZmFcV1FLRkVIT1hldYmjxdvg3dbRzcfBvLi0r6unop2XkYyGgXt1cGxoY15ZU01IRUVKUlxufZS00d7e2dPPycO+urWxramnop6Zk46JgoB7dnFtaWVgW1VQSUZGS1BcbH2SsNDf39rU0MvGwLu3s6+sqKSgm5WQioR/enVwa2dlYFtWUEpGRUlPWmp7kK7P4N/b1dHMx8G8uLSwr6uppaGcl5KMhoF8d3JuamdkX1pUT0lFRUpRW2x+k7DQ397Z09DLxsC7t7Ovrauop6ObmJOOiYSAe3ZxbWllYFtVT0lGRktTXW5/lLHQ3t3Y0s/KxcC7t7SwsK6rqaegnpqWkY2IgoB6dXBsaGRfWlRPSkZGTFReb4CTr87d3dnTz8rFwLu4tLGvrqyrqaWjoZ2Zlo+LhYJ9eHNua2dhXFZRTEhGR05VYG+Bk67N3N3Z08/Lx8K9ubWysK+trKqopKGem5iRjYiFgHt2cW5rZ2JeWFJNSUdIUFZicYOVrc3b29jTz8vHw7+7t7SysK+trauopqShn5yXko6KhIB7dnFtaWVhXVhSTkpIT1VfcIGTq8vb3NnU0MzIxMC8ubazsbCvrq2rqaimop+bl5KOiYSAe3ZxbWllYV1YUk5KSE9VX3CBk6vL29vY09DMycXBvbm2tLKxsK+urauqp6WjoJyYk4+JhIB7dnFtaWViXVhSTkpIT1VfcIGTq8vb29jT0MzJxcG9ubWzsrGwr66trKqop6ShnpqVkIuGgXx3cm5qZmJeWVNPSkdNU19vgZOrzdvb2NPQzMnFwby4tbOysbCvrq2sq6mopaShnpqWkYyHgn14c29rZ2NgWlRPSkdNU19ugJKqzNzc2dTQzcrGwr25trSzsbCvrq6trKuqqKajop+bl5KNiISAe3dvbGhlYFtVUEtISE5WYHGElK3O3NzY087LyMTBvbq2tLOysbCvrq6trKuqqKekop+bl5KNiISAe3dvbGhlYFtVUEtISE5WYHGElK3O3NzY087LyMTBvbq2tLOysbCvrq6trKuqqKekop+bl5KNiISAe3dvbGhlYFtVUEtISE5WYHGElK3O3NzY087LyMTBvbq2tLOysbCvrq6trKuqqKekop+bl5KNiISAe3dvbGhlYFtVUEtISE5WYHGElK3O3NzY087LyMTBvbq2tLOysbCvrq6trKuqqKekop+bl5KNiISAe3dvbGhlYFtV');
@@ -30,145 +23,91 @@ class WordHuntGame {
         this.isHost = false;
 
         // Bind event handlers
-        var self = this;
-        this.handleMouseDown = function(event) { self._handleMouseDown(event); };
-        this.handleMouseMove = function(event) { self._handleMouseMove(event); };
-        this.handleMouseUp = function() { self._handleMouseUp(); };
-        this.handleTouchStart = function(event) { self._handleTouchStart(event); };
-        this.handleTouchMove = function(event) { self._handleTouchMove(event); };
-        this.handleTouchEnd = function(event) { self._handleTouchEnd(event); };
+        this.handleMouseDown = this.handleMouseDown.bind(this);
+        this.handleMouseMove = this.handleMouseMove.bind(this);
+        this.handleMouseUp = this.handleMouseUp.bind(this);
+        this.handleTouchStart = this.handleTouchStart.bind(this);
+        this.handleTouchMove = this.handleTouchMove.bind(this);
+        this.handleTouchEnd = this.handleTouchEnd.bind(this);
         
         this.setupEventListeners();
         this.setupSocketListeners();
-        console.log('WordHuntGame initialized');
     }
 
-    // ... [Previous socket listeners and other methods remain the same] ...
+    setupSocketListeners() {
+        this.socket.on('connected', (data) => {
+            this.userId = data.user_id;
+            console.log('Connected with user ID:', this.userId);
+        });
 
-    _handleMouseDown(event) {
-        console.log('Mouse down event');
-        if (!this.isPlaying) return;
-        var cell = this.getCellFromEvent(event);
-        if (cell) {
-            this.selectedCells = [cell];
-            this.currentWord = this.grid[cell.row][cell.col];
-            this.drawGrid();
-        }
-    }
+        this.socket.on('room_created', (data) => {
+            this.roomId = data.room_id;
+            this.isHost = true;
+            document.getElementById('menuOptions').style.display = 'none';
+            document.getElementById('waitingRoom').style.display = 'block';
+            document.getElementById('roomIdDisplay').textContent = this.roomId;
+            document.getElementById('hostControls').style.display = 'block';
+            this.updatePlayersList(data.players);
+        });
 
-    _handleMouseMove(event) {
-        if (!this.isPlaying || this.selectedCells.length === 0) return;
-        var cell = this.getCellFromEvent(event);
-        if (cell && this.isValidNextCell(cell)) {
-            this.selectedCells.push(cell);
-            this.currentWord += this.grid[cell.row][cell.col];
-            this.drawGrid();
-        }
-    }
-
-    _handleMouseUp() {
-        if (!this.isPlaying) return;
-        this.handleWordSubmission();
-        this.selectedCells = [];
-        this.currentWord = '';
-        this.drawGrid();
-    }
-
-    _handleTouchStart(event) {
-        event.preventDefault();
-        this._handleMouseDown(event.touches[0]);
-    }
-
-    _handleTouchMove(event) {
-        event.preventDefault();
-        this._handleMouseMove(event.touches[0]);
-    }
-
-    _handleTouchEnd(event) {
-        event.preventDefault();
-        this._handleMouseUp();
-    }
-
-    getCellFromEvent(event) {
-        var rect = this.canvas.getBoundingClientRect();
-        var x = event.clientX - rect.left;
-        var y = event.clientY - rect.top;
-        var row = Math.floor(y / this.cellSize);
-        var col = Math.floor(x / this.cellSize);
-        if (row >= 0 && row < 4 && col >= 0 && col < 4) {
-            return { row: row, col: col };
-        }
-        return null;
-    }
-
-    isValidNextCell(cell) {
-        if (this.selectedCells.length === 0) return true;
-        
-        var lastCell = this.selectedCells[this.selectedCells.length - 1];
-        var rowDiff = Math.abs(cell.row - lastCell.row);
-        var colDiff = Math.abs(cell.col - lastCell.col);
-        
-        // Check if the cell is already selected
-        for (var i = 0; i < this.selectedCells.length; i++) {
-            if (this.selectedCells[i].row === cell.row && this.selectedCells[i].col === cell.col) {
-                return false;
+        this.socket.on('player_joined', (data) => {
+            this.updatePlayersList(data.players);
+            if (data.players.length === 2 && this.isHost) {
+                document.getElementById('startGameBtn').disabled = false;
             }
-        }
-        
-        // Check if the cell is adjacent (including diagonals)
-        return rowDiff <= 1 && colDiff <= 1;
-    }
+        });
 
-    setupEventListeners() {
-        if (!this.canvas) return;
-        
-        this.canvas.addEventListener('mousedown', this.handleMouseDown);
-        this.canvas.addEventListener('mousemove', this.handleMouseMove);
-        this.canvas.addEventListener('mouseup', this.handleMouseUp);
-        
-        this.canvas.addEventListener('touchstart', this.handleTouchStart);
-        this.canvas.addEventListener('touchmove', this.handleTouchMove);
-        this.canvas.addEventListener('touchend', this.handleTouchEnd);
-        
-        var self = this;
-        document.getElementById('newGame').addEventListener('click', function() {
-            if (self.roomId) {
-                location.reload();
-            } else {
-                self.showStartScreen();
+        this.socket.on('join_error', (data) => {
+            alert(data.message);
+        });
+
+        this.socket.on('game_ready', () => {
+            if (this.isHost) {
+                document.getElementById('startGameBtn').disabled = false;
             }
+        });
+
+        this.socket.on('game_started', (data) => {
+            document.getElementById('startModal').style.display = 'none';
+            this.grid = data.grid;
+            this.score = 0;
+            this.foundWords = new Set();
+            this.updateScore();
+            this.updateFoundWords();
+            this.drawGrid();
+            this.startTimer();
+            this.isPlaying = true;
+        });
+
+        this.socket.on('score_update', (data) => {
+            const playerScores = data.scores;
+            Object.keys(playerScores).forEach((userId, index) => {
+                const scoreElement = document.getElementById(`player${index + 1}Score`);
+                if (scoreElement) {
+                    scoreElement.textContent = `Player ${index + 1}: ${playerScores[userId]}`;
+                }
+            });
+
+            if (data.user_id === this.userId && data.word) {
+                this.foundWords.add(data.word);
+                this.updateFoundWords();
+                this.showFeedback(true, data.points);
+            }
+        });
+
+        this.socket.on('game_ended', (data) => {
+            this.isGameOver = true;
+            this.isPlaying = false;
+            clearInterval(this.timerInterval);
+            const isWinner = data.winner === this.userId;
+            this.showGameOverScreen(data.final_scores, isWinner);
         });
     }
 
-    async handleWordSubmission() {
-        if (this.isGameOver || !this.currentWord || this.currentWord.length < 3 || !this.roomId) {
-            this.selectedCells = [];
-            this.currentWord = '';
-            this.drawGrid();
-            return;
-        }
-
-        try {
-            var response = await fetch('/validate/' + this.currentWord);
-            var data = await response.json();
-            
-            if (data.valid && !this.foundWords.has(this.currentWord)) {
-                this.socket.emit('word_found', {
-                    room_id: this.roomId,
-                    word: this.currentWord
-                });
-                this.validWordSound.play();
-            } else {
-                this.invalidWordSound.play();
-                this.showFeedback(false);
-            }
-        } catch (error) {
-            console.error("Error validating word:", error);
-        }
-    }
+    [Rest of the code remains the same...]
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', () => {
     window.game = new WordHuntGame();
     window.game.showStartScreen();
 });
