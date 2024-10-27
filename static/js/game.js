@@ -178,6 +178,82 @@ class WordHuntGame {
         this.drawGrid();
     }
 
+    async handleWordSubmission() {
+        if (!this.currentWord || this.currentWord.length < 3) {
+            this.resetSelection();
+            return;
+        }
+
+        if (this.foundWords.has(this.currentWord)) {
+            this.showFeedback(false);
+            this.resetSelection();
+            return;
+        }
+
+        try {
+            const response = await fetch('/validate/' + this.currentWord);
+            const data = await response.json();
+            
+            if (data.valid) {
+                const points = {
+                    3: 100, 
+                    4: 400, 
+                    5: 800, 
+                    6: 1400,
+                    7: 1800,
+                    8: 2200,
+                    9: 2600
+                }[this.currentWord.length] || 0;
+                this.score += points;
+                this.foundWords.add(this.currentWord);
+                this.updateScore();
+                this.updateFoundWords();
+                this.showFeedback(true, points);
+            } else {
+                this.showFeedback(false);
+            }
+        } catch (error) {
+            console.error("Error validating word:", error);
+        }
+        
+        this.resetSelection();
+    }
+
+    showFeedback(valid, points) {
+        const feedback = document.createElement('div');
+        let feedbackClass = 'valid';
+        let feedbackText = `+${points}`;
+        
+        if (!valid) {
+            if (this.foundWords.has(this.currentWord)) {
+                feedbackClass = 'duplicate';
+                feedbackText = 'Already Found';
+            } else {
+                feedbackClass = 'invalid';
+                feedbackText = 'Invalid';
+            }
+        }
+        
+        feedback.className = `word-feedback ${feedbackClass}`;
+        feedback.textContent = feedbackText;
+        
+        const lastCell = this.selectedCells[this.selectedCells.length - 1];
+        if (!lastCell) return;
+        
+        const rect = this.canvas.getBoundingClientRect();
+        const x = rect.left + (lastCell.col * this.cellSize) + (this.cellSize / 2);
+        const y = rect.top + (lastCell.row * this.cellSize) + (this.cellSize / 2);
+        
+        feedback.style.left = `${x}px`;
+        feedback.style.top = `${y}px`;
+        
+        document.body.appendChild(feedback);
+        
+        setTimeout(() => {
+            feedback.remove();
+        }, 500);
+    }
+
     drawGrid() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
@@ -233,63 +309,6 @@ class WordHuntGame {
         return this.selectedCells.some(cell => 
             cell.row === row && cell.col === col
         );
-    }
-
-    async handleWordSubmission() {
-        if (!this.currentWord || this.currentWord.length < 3) {
-            this.resetSelection();
-            return;
-        }
-
-        try {
-            const response = await fetch('/validate/' + this.currentWord);
-            const data = await response.json();
-            
-            if (data.valid && !this.foundWords.has(this.currentWord)) {
-                const points = {
-                    3: 100, 
-                    4: 400, 
-                    5: 800, 
-                    6: 1400,
-                    7: 1800,
-                    8: 2200,
-                    9: 2600
-                }[this.currentWord.length] || 0;
-                this.score += points;
-                this.foundWords.add(this.currentWord);
-                this.updateScore();
-                this.updateFoundWords();
-                this.showFeedback(true, points);
-            } else {
-                this.showFeedback(false);
-            }
-        } catch (error) {
-            console.error("Error validating word:", error);
-        }
-        
-        this.resetSelection();
-    }
-
-    showFeedback(valid, points) {
-        const feedback = document.createElement('div');
-        feedback.className = `word-feedback ${valid ? 'valid' : 'invalid'}`;
-        feedback.textContent = valid ? `+${points}` : 'Invalid';
-        
-        const lastCell = this.selectedCells[this.selectedCells.length - 1];
-        if (!lastCell) return;
-        
-        const rect = this.canvas.getBoundingClientRect();
-        const x = rect.left + (lastCell.col * this.cellSize) + (this.cellSize / 2);
-        const y = rect.top + (lastCell.row * this.cellSize) + (this.cellSize / 2);
-        
-        feedback.style.left = `${x}px`;
-        feedback.style.top = `${y}px`;
-        
-        document.body.appendChild(feedback);
-        
-        setTimeout(() => {
-            feedback.remove();
-        }, 500); // Changed from 1000ms to 500ms
     }
 
     showGameOverScreen() {

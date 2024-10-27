@@ -61,6 +61,11 @@
     transform: translateY(-20px);
 }
 
+.word-feedback.duplicate {
+    color: var(--bs-warning);
+    transform: translateY(-20px);
+}
+
 .player-score {
     padding: 0.5rem;
     margin-bottom: 0.5rem;
