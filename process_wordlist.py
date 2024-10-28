@@ -17,6 +17,7 @@ def process_words():
     valid_words = set()
     
     # Define a pattern for valid words (only letters, no special chars)
+    # Updated pattern to include words up to 9 letters
     pattern = re.compile(r'^[A-Za-z]{3,9}$')
     
     for word in words:
