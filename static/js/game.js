@@ -352,7 +352,7 @@ class WordHuntGame {
                     <label for="playerName" class="form-label">Enter your name:</label>
                     <input type="text" class="form-control" id="playerName" maxlength="20" required>
                 </div>
-                <button class="btn btn-primary" id="saveScoreBtn">Save Score</button>
+                <button class="btn btn-primary" id="saveScoreBtn" onclick="this.disabled = true;">Save Score</button>
             </div>
         `;
         
