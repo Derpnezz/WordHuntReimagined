@@ -6,8 +6,8 @@ from game_utils import load_dictionary, is_valid_word
 import logging
 from database import init_db, save_high_score, get_top_scores
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# Configure logging with debug level for better debugging
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
@@ -18,7 +18,7 @@ init_db()
 
 # Load dictionary on startup
 WORD_DICT = load_dictionary()
-logger.info(f"Dictionary loaded with {len(WORD_DICT)} words")
+logger.debug(f"Dictionary loaded with {len(WORD_DICT)} words")
 
 @app.route('/')
 def index():
@@ -30,18 +30,21 @@ def index():
 
 @app.route('/new-grid')
 def new_grid():
-    LETTER_LIST = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
-    occurence = np.array([17, 3, 8, 9, 20, 6, 3, 12, 17, (1/3), 3, 12, 9, 15, 17, 2, 2, 13, 19, 19, 3, 2, 7, (1/3), 3, (1/3)])
-    totalOccurence = 222
-    weights = occurence / totalOccurence
+    # Pre-calculate letter weights for better performance
+    LETTER_WEIGHTS = {
+        letter: weight for letter, weight in zip(
+            ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'],
+            np.array([17, 3, 8, 9, 20, 6, 3, 12, 17, 1/3, 3, 12, 9, 15, 17, 2, 2, 13, 19, 19, 3, 2, 7, 1/3, 3, 1/3]) / 222
+        )
+    }
     
-    grid = []
-    for _ in range(4):
-        row = []
-        for _ in range(4):
-            letter = random.choices(LETTER_LIST, weights)
-            row.append(letter[0])
-        grid.append(row)
+    # Generate grid more efficiently using list comprehension and numpy's random choice
+    letters = list(LETTER_WEIGHTS.keys())
+    weights = list(LETTER_WEIGHTS.values())
+    grid = [
+        [np.random.choice(letters, p=weights) for _ in range(4)]
+        for _ in range(4)
+    ]
     
     return jsonify({'grid': grid})
 
@@ -49,7 +52,7 @@ def new_grid():
 def validate_word(word):
     word = word.upper()
     valid = is_valid_word(word, WORD_DICT)
-    logger.info(f"Validating word: {word} - Result: {'valid' if valid else 'invalid'}")
+    logger.debug(f"Validating word: {word} - Result: {'valid' if valid else 'invalid'}")
     return jsonify({'valid': valid})
 
 @app.route('/save-score', methods=['POST'])
@@ -79,22 +82,3 @@ def leaderboard():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
-from datetime import datetime
-import logging
-
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
-
-@app.route('/ping')
-def ping():
-    try:
-        response = jsonify({'status': 'alive', 'timestamp': datetime.now().isoformat()})
-        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-        response.headers['Pragma'] = 'no-cache'
-        response.headers['Expires'] = '0'
-        return response
-    except Exception as e:
-        logger.error(f"Ping endpoint error: {str(e)}")
-        return jsonify({'status': 'error', 'message': 'Internal server error'}), 500
-

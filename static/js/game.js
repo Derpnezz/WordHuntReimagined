@@ -1,68 +1,3 @@
-// Keep-alive mechanism with exponential backoff
-let keepAliveInterval = null;
-let retryCount = 0;
-const MAX_RETRY_COUNT = 5;
-const BASE_INTERVAL = 15000; // 15 seconds
-const MAX_INTERVAL = 60000; // 1 minute
-
-function startKeepAlive() {
-    if (keepAliveInterval) {
-        clearInterval(keepAliveInterval);
-    }
-    
-    const ping = async () => {
-        try {
-            const response = await fetch('/ping', {
-                headers: {
-                    'Cache-Control': 'no-cache',
-                    'Pragma': 'no-cache'
-                }
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const data = await response.json();
-            retryCount = 0; // Reset retry count on successful ping
-            return true;
-        } catch (error) {
-            console.error('Keep-alive error:', error);
-            return false;
-        }
-    };
-
-    const scheduleNextPing = async () => {
-        const success = await ping();
-        if (!success) {
-            retryCount = Math.min(retryCount + 1, MAX_RETRY_COUNT);
-            const backoffTime = Math.min(BASE_INTERVAL * Math.pow(2, retryCount), MAX_INTERVAL);
-            console.log(`Retry ${retryCount}/${MAX_RETRY_COUNT}, next attempt in ${backoffTime/1000}s`);
-            
-            if (retryCount === MAX_RETRY_COUNT) {
-                console.error('Max retry count reached, stopping keep-alive');
-                stopKeepAlive();
-                return;
-            }
-            
-            setTimeout(scheduleNextPing, backoffTime);
-        } else {
-            setTimeout(scheduleNextPing, BASE_INTERVAL);
-        }
-    };
-
-    // Start the ping cycle
-    scheduleNextPing();
-}
-
-function stopKeepAlive() {
-    if (keepAliveInterval) {
-        clearInterval(keepAliveInterval);
-        keepAliveInterval = null;
-    }
-}
-
-// Start keep-alive as soon as the script loads
-startKeepAlive();
-
 class WordHuntGame {
     constructor() {
         this.canvas = document.getElementById('gameGrid');
@@ -92,13 +27,14 @@ class WordHuntGame {
         this.handleTouchMove = this.handleTouchMove.bind(this);
         this.handleTouchEnd = this.handleTouchEnd.bind(this);
         
-        // Add event listeners
-        this.canvas.addEventListener('mousedown', this.handleMouseDown);
-        this.canvas.addEventListener('mousemove', this.handleMouseMove);
-        this.canvas.addEventListener('mouseup', this.handleMouseUp);
-        this.canvas.addEventListener('touchstart', this.handleTouchStart);
-        this.canvas.addEventListener('touchmove', this.handleTouchMove);
-        this.canvas.addEventListener('touchend', this.handleTouchEnd);
+        // Add event listeners with passive option for better performance
+        const eventOptions = { passive: true };
+        this.canvas.addEventListener('mousedown', this.handleMouseDown, eventOptions);
+        this.canvas.addEventListener('mousemove', this.handleMouseMove, eventOptions);
+        this.canvas.addEventListener('mouseup', this.handleMouseUp, eventOptions);
+        this.canvas.addEventListener('touchstart', this.handleTouchStart);  // Can't be passive due to preventDefault
+        this.canvas.addEventListener('touchmove', this.handleTouchMove);    // Can't be passive due to preventDefault
+        this.canvas.addEventListener('touchend', this.handleTouchEnd);      // Can't be passive due to preventDefault
     }
 
     setupGameControls() {
@@ -347,28 +283,39 @@ class WordHuntGame {
     }
 
     drawGrid() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        // Pre-calculate common values and cache styles
+        const width = this.canvas.width;
+        const height = this.canvas.height;
+        const halfCellSize = this.cellSize / 2;
         
+        this.ctx.clearRect(0, 0, width, height);
+        
+        // Set text properties once
+        this.ctx.font = 'bold 48px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        
+        // Draw grid cells and letters
         for (let row = 0; row < 4; row++) {
             for (let col = 0; col < 4; col++) {
                 const x = col * this.cellSize;
                 const y = row * this.cellSize;
                 
+                // Draw cell background
                 this.ctx.fillStyle = this.isSelected(row, col) ? '#3498db' : '#2c3e50';
                 this.ctx.fillRect(x, y, this.cellSize, this.cellSize);
                 
+                // Draw cell border
                 this.ctx.strokeStyle = '#34495e';
                 this.ctx.strokeRect(x, y, this.cellSize, this.cellSize);
                 
-                if (this.grid[row] && this.grid[row][col]) {
+                // Draw letter
+                if (this.grid[row]?.[col]) {
                     this.ctx.fillStyle = '#ffffff';
-                    this.ctx.font = 'bold 48px Arial';
-                    this.ctx.textAlign = 'center';
-                    this.ctx.textBaseline = 'middle';
                     this.ctx.fillText(
                         this.grid[row][col],
-                        x + this.cellSize / 2,
-                        y + this.cellSize / 2
+                        x + halfCellSize,
+                        y + halfCellSize
                     );
                 }
             }
@@ -490,7 +437,7 @@ class WordHuntGame {
     }
 }
 
-// Initialize game when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
+// Initialize game when DOM is loaded with optimized event handling
+document.addEventListener('DOMContentLoaded', () => {
     window.game = new WordHuntGame();
 });
