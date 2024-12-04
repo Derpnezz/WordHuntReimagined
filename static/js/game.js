@@ -12,7 +12,12 @@ function startKeepAlive() {
     
     const ping = async () => {
         try {
-            const response = await fetch('/ping');
+            const response = await fetch('/ping', {
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            });
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
