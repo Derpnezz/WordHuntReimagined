@@ -418,6 +418,13 @@ class WordHuntGame {
         
         document.body.appendChild(gameOverModal);
 
+        const playerNameInput = document.getElementById('playerName');
+        playerNameInput.addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') {
+                document.getElementById('saveScoreBtn').click();
+            }
+        });
+
         document.getElementById('saveScoreBtn').addEventListener('click', () => {
             const playerName = document.getElementById('playerName').value.trim();
             if (playerName) {
