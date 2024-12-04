@@ -173,3 +173,14 @@
 .shake {
     animation: shake 0.2s cubic-bezier(0.36, 0, 0.66, 1) both;
 }
+
+
+body {
+    overflow: hidden;
+    height: 100vh;
+}
+
+.instructions-content {
+    max-height: 80vh;
+    overflow-y: auto;
+}
