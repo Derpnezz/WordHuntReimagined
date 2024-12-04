@@ -1,3 +1,63 @@
+// Keep-alive mechanism with exponential backoff
+let keepAliveInterval = null;
+let retryCount = 0;
+const MAX_RETRY_COUNT = 5;
+const BASE_INTERVAL = 15000; // 15 seconds
+const MAX_INTERVAL = 60000; // 1 minute
+
+function startKeepAlive() {
+    if (keepAliveInterval) {
+        clearInterval(keepAliveInterval);
+    }
+    
+    const ping = async () => {
+        try {
+            const response = await fetch('/ping');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            retryCount = 0; // Reset retry count on successful ping
+            return true;
+        } catch (error) {
+            console.error('Keep-alive error:', error);
+            return false;
+        }
+    };
+
+    const scheduleNextPing = async () => {
+        const success = await ping();
+        if (!success) {
+            retryCount = Math.min(retryCount + 1, MAX_RETRY_COUNT);
+            const backoffTime = Math.min(BASE_INTERVAL * Math.pow(2, retryCount), MAX_INTERVAL);
+            console.log(`Retry ${retryCount}/${MAX_RETRY_COUNT}, next attempt in ${backoffTime/1000}s`);
+            
+            if (retryCount === MAX_RETRY_COUNT) {
+                console.error('Max retry count reached, stopping keep-alive');
+                stopKeepAlive();
+                return;
+            }
+            
+            setTimeout(scheduleNextPing, backoffTime);
+        } else {
+            setTimeout(scheduleNextPing, BASE_INTERVAL);
+        }
+    };
+
+    // Start the ping cycle
+    scheduleNextPing();
+}
+
+function stopKeepAlive() {
+    if (keepAliveInterval) {
+        clearInterval(keepAliveInterval);
+        keepAliveInterval = null;
+    }
+}
+
+// Start keep-alive as soon as the script loads
+startKeepAlive();
+
 class WordHuntGame {
     constructor() {
         this.canvas = document.getElementById('gameGrid');
@@ -12,8 +72,6 @@ class WordHuntGame {
         this.timer = null;
         this.timeLeft = 80;
         this.isMouseDown = false;
-        this.keepAliveInterval = null;
-        this.startKeepAlive();
         
         // Set up event listeners
         this.setupEventListeners();
@@ -417,27 +475,6 @@ class WordHuntGame {
 
         updateTimer();
         this.timer = setInterval(updateTimer, 1000);
-    }
-
-    startKeepAlive() {
-        // Clear any existing interval
-        if (this.keepAliveInterval) {
-            clearInterval(this.keepAliveInterval);
-        }
-        
-        // Send ping every 30 seconds
-        this.keepAliveInterval = setInterval(() => {
-            fetch('/ping')
-                .then(response => response.json())
-                .catch(error => console.error('Keep-alive error:', error));
-        }, 30000);
-    }
-
-    stopKeepAlive() {
-        if (this.keepAliveInterval) {
-            clearInterval(this.keepAliveInterval);
-            this.keepAliveInterval = null;
-        }
     }
 }
 

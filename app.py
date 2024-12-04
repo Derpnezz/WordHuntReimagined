@@ -79,7 +79,22 @@ def leaderboard():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+from datetime import datetime
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
 @app.route('/ping')
 def ping():
-    return jsonify({'status': 'alive'})
+    try:
+        response = jsonify({'status': 'alive', 'timestamp': datetime.now().isoformat()})
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+        return response
+    except Exception as e:
+        logger.error(f"Ping endpoint error: {str(e)}")
+        return jsonify({'status': 'error', 'message': 'Internal server error'}), 500
 
