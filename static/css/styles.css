@@ -188,11 +188,12 @@ body {
 .leaderboards {
     margin-top: 1rem;
     border-radius: 0.375rem;
-    padding-right: 2px;
 }
 
 .leaderboards table {
     margin-bottom: 0;
+    width: 100%;
+    table-layout: fixed;
 }
 
 .leaderboards th {
@@ -200,7 +201,7 @@ body {
     top: 0;
     background-color: var(--bs-dark);
     z-index: 1;
-    padding: 0.5rem !important;
+    padding: 0.75rem 1rem !important;
 }
 
 .table-responsive {
@@ -210,6 +211,7 @@ body {
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: var(--bs-gray-600) var(--bs-dark);
+    padding: 0 0.5rem;
 }
 
 .table-responsive::-webkit-scrollbar {
