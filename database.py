@@ -57,7 +57,7 @@ def save_high_score(player_id, player_name, score, game_mode='multi'):
             )
             conn.commit()
 
-def get_top_scores(limit=10, game_mode='multi'):
+def get_top_scores(limit=100, game_mode='multi'):
     """Get top scores for a given game mode"""
     with get_db_connection() as conn:
         with conn.cursor(cursor_factory=DictCursor) as cur:

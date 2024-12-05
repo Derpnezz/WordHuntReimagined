@@ -186,10 +186,9 @@ body {
 }
 
 .leaderboards {
-    max-height: 300px;
-    overflow-y: auto;
     margin-top: 1rem;
     border-radius: 0.375rem;
+    padding-right: 2px;
 }
 
 .leaderboards table {
@@ -201,15 +200,35 @@ body {
     top: 0;
     background-color: var(--bs-dark);
     z-index: 1;
+    padding: 0.5rem !important;
 }
 
 .table-responsive {
-    max-height: 250px;
+    max-height: 350px;
     border: 1px solid var(--bs-dark);
+    border-radius: 0.375rem;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--bs-gray-600) var(--bs-dark);
+}
+
+.table-responsive::-webkit-scrollbar {
+    width: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: var(--bs-dark);
     border-radius: 0.375rem;
 }
 
+.table-responsive::-webkit-scrollbar-thumb {
+    background-color: var(--bs-gray-600);
+    border-radius: 0.375rem;
+    border: 2px solid var(--bs-dark);
+}
+
 .table td {
-    padding: 0.5rem;
+    padding: 0.4rem 0.5rem !important;
     vertical-align: middle;
+    font-size: 0.95rem;
 }
