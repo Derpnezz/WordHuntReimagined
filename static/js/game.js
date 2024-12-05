@@ -1,3 +1,4 @@
+const gameTime = 90; // ONE MINUTE THIRTY SECONDS FOR THE GAME
 class WordHuntGame {
     constructor() {
         this.canvas = document.getElementById('gameGrid');
@@ -10,7 +11,7 @@ class WordHuntGame {
         this.currentWord = '';
         this.isPlaying = false;
         this.timer = null;
-        this.timeLeft = 80;
+        this.timeLeft = gameTime;
         this.isMouseDown = false;
         
         // Set up event listeners
@@ -416,7 +417,7 @@ class WordHuntGame {
     startTimer() {
         if (this.timer) clearInterval(this.timer);
         
-        this.timeLeft = 80;
+        this.timeLeft = gameTime;
         const timerElement = document.getElementById('timer');
         
         const updateTimer = () => {

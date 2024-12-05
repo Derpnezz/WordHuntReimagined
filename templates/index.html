@@ -23,25 +23,25 @@
             </div>
             
             <!-- Single Player Leaderboard -->
-            <div class="leaderboards mt-4">
-                <h3>Top Scores</h3>
+            <div class="leaderboards">
+                <h5 class="mb-2">Top Scores</h5>
                 <div class="table-responsive">
-                    <table class="table table-dark table-striped">
+                    <table class="table table-dark table-striped table-sm">
                         <thead>
                             <tr>
-                                <th>Rank</th>
+                                <th class="text-center">#</th>
                                 <th>Player</th>
-                                <th>Score</th>
-                                <th>Date</th>
+                                <th class="text-end">Score</th>
+                                <th class="text-end">Date</th>
                             </tr>
                         </thead>
                         <tbody id="singleplayer-scores">
                             {% for score in solo_scores %}
                             <tr>
-                                <td>{{ loop.index }}</td>
+                                <td class="text-center">{{ loop.index }}</td>
                                 <td>{{ score.player_name }}</td>
-                                <td>{{ score.score }}</td>
-                                <td>{{ score.game_date.strftime('%m-%d-%Y') }}</td>
+                                <td class="text-end">{{ score.score }}</td>
+                                <td class="text-end">{{ score.game_date.strftime('%m/%d/%y') }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -68,7 +68,7 @@
                         <li>7 letters: 1800 points</li>
                     </ul>
                 </li>
-                <li>You have 80 seconds to find as many words as possible.</li>
+                <li>You have 90 seconds to find as many words as possible.</li>
                 <li>The game ends when the timer runs out.</li>
             </ul>
             <button id="closeInstructions" class="btn btn-primary mt-3">Got it!</button>
