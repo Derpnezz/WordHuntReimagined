@@ -230,7 +230,8 @@ body {
 }
 
 .table td {
-    padding: 0.4rem 0.5rem !important;
+    padding: 0.35rem 0.4rem !important;
     vertical-align: middle;
     font-size: 0.95rem;
+    white-space: nowrap;
 }
