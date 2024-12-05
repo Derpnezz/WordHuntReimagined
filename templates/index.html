@@ -30,18 +30,18 @@
                         <thead>
                             <tr>
                                 <th class="text-center" style="width: 10%">#</th>
+                                <th class="text-center" style="width: 25%">Score</th>
+                                <th class="text-center" style="width: 25%">Date</th>
                                 <th style="width: 40%">Player</th>
-                                <th class="text-end" style="width: 25%">Score</th>
-                                <th class="text-end" style="width: 25%">Date</th>
                             </tr>
                         </thead>
                         <tbody id="singleplayer-scores">
                             {% for score in solo_scores %}
                             <tr>
                                 <td class="text-center">{{ loop.index }}</td>
+                                <td class="text-center">{{ score.score }}</td>
+                                <td class="text-center">{{ score.game_date.strftime('%m/%d/%y') }}</td>
                                 <td>{{ score.player_name }}</td>
-                                <td class="text-end">{{ score.score }}</td>
-                                <td class="text-end">{{ score.game_date.strftime('%m/%d/%y') }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
