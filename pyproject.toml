@@ -12,4 +12,5 @@ dependencies = [
     "flask-socketio>=5.4.1",
     "eventlet>=0.37.0",
     "python-socketio>=5.11.4",
+    "numpy",
 ]
