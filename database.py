@@ -4,20 +4,26 @@ from psycopg2.pool import SimpleConnectionPool
 from psycopg2.extras import DictCursor
 from contextlib import contextmanager
 
-# Create a connection pool
-db_pool = SimpleConnectionPool(
-    minconn=1,
-    maxconn=10,
-    host=os.environ['PGHOST'],
-    database=os.environ['PGDATABASE'],
-    user=os.environ['PGUSER'],
-    password=os.environ['PGPASSWORD'],
-    port=os.environ['PGPORT']
-)
+# Create a connection pool with error handling
+try:
+    db_pool = SimpleConnectionPool(
+        minconn=1,
+        maxconn=10,
+        host=os.environ.get('PGHOST'),
+        database=os.environ.get('PGDATABASE'),
+        user=os.environ.get('PGUSER'),
+        password=os.environ.get('PGPASSWORD'),
+        port=os.environ.get('PGPORT')
+    )
+except Exception as e:
+    print(f"Database connection error: {e}")
+    db_pool = None
 
 @contextmanager
 def get_db_connection():
     """Get a database connection from the pool"""
+    if db_pool is None:
+        return None
     conn = db_pool.getconn()
     try:
         yield conn
