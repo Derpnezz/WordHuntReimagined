@@ -4,31 +4,48 @@ from psycopg2.pool import SimpleConnectionPool
 from psycopg2.extras import DictCursor
 from contextlib import contextmanager
 
-# Create a connection pool with error handling
-try:
-    db_pool = SimpleConnectionPool(
-        minconn=1,
-        maxconn=10,
-        host=os.environ.get('PGHOST'),
-        database=os.environ.get('PGDATABASE'),
-        user=os.environ.get('PGUSER'),
-        password=os.environ.get('PGPASSWORD'),
-        port=os.environ.get('PGPORT')
-    )
-except Exception as e:
-    print(f"Database connection error: {e}")
-    db_pool = None
+# Create a connection pool with retries
+retries = 3
+db_pool = None
+
+for attempt in range(retries):
+    try:
+        db_pool = SimpleConnectionPool(
+            minconn=1,
+            maxconn=10,
+            host=os.environ.get('PGHOST'),
+            database=os.environ.get('PGDATABASE'),
+            user=os.environ.get('PGUSER'),
+            password=os.environ.get('PGPASSWORD'),
+            port=os.environ.get('PGPORT'),
+            connect_timeout=5
+        )
+        if db_pool:
+            break
+    except Exception as e:
+        print(f"Database connection attempt {attempt + 1} failed: {e}")
+        if attempt == retries - 1:
+            print("All connection attempts failed")
 
 @contextmanager
 def get_db_connection():
     """Get a database connection from the pool"""
     if db_pool is None:
-        return None
-    conn = db_pool.getconn()
+        yield None
+        return
+        
+    conn = None
     try:
+        conn = db_pool.getconn()
+        # Test if connection is alive
+        conn.cursor().execute('SELECT 1')
         yield conn
+    except Exception as e:
+        print(f"Database connection error: {e}")
+        yield None
     finally:
-        db_pool.putconn(conn)
+        if conn:
+            db_pool.putconn(conn)
 
 def init_db():
     """Initialize the database schema"""
