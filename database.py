@@ -70,6 +70,8 @@ def get_top_scores(limit=100, game_mode='multi'):
         
     try:
         with get_db_connection() as conn:
+            if conn is None:  # Return None if connection fails
+                return None
             with conn.cursor(cursor_factory=DictCursor) as cur:
                 cur.execute('''
                     SELECT player_name, score, game_date 
