@@ -43,10 +43,9 @@ def index():
     if 'user_id' not in session:
         session['user_id'] = secrets.token_urlsafe(8)
     
-    try:
-        solo_scores = get_top_scores(game_mode='solo')
-    except Exception:
-        solo_scores = []
+    solo_scores = get_top_scores(game_mode='solo')
+    if solo_scores is None:
+        return render_template('index.html', reload_page=True)
     return render_template('index.html', solo_scores=solo_scores)
 
 LETTERS = np.array(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'])

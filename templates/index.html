@@ -10,6 +10,13 @@
     <link rel="icon" href="/static/img/favicon.png" type="image/png">
 </head>
 <body>
+    {% if reload_page %}
+    <script>
+        setTimeout(function() {
+            window.location.reload();
+        }, 1000);
+    </script>
+    {% endif %}
     <div id="startModal" class="game-over-modal">
         <div class="game-over-content">
             <h2>Word Hunt
