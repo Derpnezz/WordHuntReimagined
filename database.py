@@ -65,13 +65,19 @@ def save_high_score(player_id, player_name, score, game_mode='multi'):
 
 def get_top_scores(limit=100, game_mode='multi'):
     """Get top scores for a given game mode"""
-    with get_db_connection() as conn:
-        with conn.cursor(cursor_factory=DictCursor) as cur:
-            cur.execute('''
-                SELECT player_name, score, game_date 
-                FROM high_scores 
-                WHERE game_mode = %s
-                ORDER BY score DESC 
-                LIMIT %s
-            ''', (game_mode, limit))
-            return [dict(row) for row in cur.fetchall()]
+    if db_pool is None:
+        return None
+        
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=DictCursor) as cur:
+                cur.execute('''
+                    SELECT player_name, score, game_date 
+                    FROM high_scores 
+                    WHERE game_mode = %s
+                    ORDER BY score DESC 
+                    LIMIT %s
+                ''', (game_mode, limit))
+                return [dict(row) for row in cur.fetchall()]
+    except Exception:
+        return None
