@@ -1,4 +1,4 @@
-const gameTime = 90; // ONE MINUTE THIRTY SECONDS FOR THE GAME
+const gameTime = 85; // ONE MINUTE THIRTY SECONDS FOR THE GAME
 class WordHuntGame {
     constructor() {
         this.canvas = document.getElementById('gameGrid');
