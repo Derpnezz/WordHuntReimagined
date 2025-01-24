@@ -14,7 +14,7 @@ class WordHuntGame {
         this.timeLeft = gameTime;
         this.isMouseDown = false;
         
-        // Set up event listeners
+        // Set up event listesaners
         this.setupEventListeners();
         this.setupGameControls();
     }
@@ -365,7 +365,7 @@ class WordHuntGame {
                     <label for="playerName" class="form-label">Enter your name:</label>
                     <input type="text" class="form-control" id="playerName" maxlength="20" required>
                 </div>
-                <button class="btn btn-primary" id="saveScoreBtn" onclick="this.disabled = true;">Save Score</button>
+                <button class="btn btn-primary" id="saveScoreBtn" onclick="if (document.getElementById('playerName').value.trim()) { this.disabled = true; }">Save Score</button>
             </div>
         `;
         
