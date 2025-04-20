@@ -2,6 +2,7 @@ modules = ["nodejs-20", "python-3.11", "postgresql-16"]
 
 [nix]
 channel = "stable-24_05"
+packages = ["iana-etc"]
 
 [workflows]
 runButton = "Project"
@@ -31,8 +32,8 @@ args = "python app.py"
 waitForPort = 5000
 
 [deployment]
-run = ["sh", "-c", "python app.py"]
-deploymentTarget = "cloudrun"
+deploymentTarget = "static"
+publicDir = "templates"
 
 [[ports]]
 localPort = 5000
