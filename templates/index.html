@@ -10,13 +10,7 @@
     <link rel="icon" href="/static/img/favicon.png" type="image/png">
 </head>
 <body>
-    {% if reload_page %}
-    <script>
-        setTimeout(function() {
-            window.location.reload();
-        }, 1000);
-    </script>
-    {% endif %}
+    <!-- No reload script needed anymore -->
     <div id="startModal" class="game-over-modal">
         <div class="game-over-content">
             <h2>Word Hunt
@@ -27,33 +21,6 @@
             
             <div id="menuOptions">
                 <button id="playSoloBtn" class="btn btn-success mb-3 w-100">Play</button>
-            </div>
-            
-            <!-- Single Player Leaderboard -->
-            <div class="leaderboards">
-                <h5 class="mb-2">Top Scores</h5>
-                <div class="table-responsive">
-                    <table class="table table-dark table-striped table-sm">
-                        <thead>
-                            <tr>
-                                <th class="text-center" style="width: 10%">#</th>
-                                <th class="text-center" style="width: 25%">Score</th>
-                                <th class="text-center" style="width: 25%">Date</th>
-                                <th style="width: 40%">Player</th>
-                            </tr>
-                        </thead>
-                        <tbody id="singleplayer-scores">
-                            {% for score in solo_scores %}
-                            <tr>
-                                <td class="text-center">{{ loop.index }}</td>
-                                <td class="text-center">{{ score.score }}</td>
-                                <td class="text-center">{{ score.game_date.strftime('%m/%d/%y') }}</td>
-                                <td>{{ score.player_name }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
             </div>
         </div>
     </div>

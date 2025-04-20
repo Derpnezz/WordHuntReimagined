@@ -361,40 +361,14 @@ class WordHuntGame {
                 <div class="final-scores mb-3">
                     <h3>Final Score: ${this.score}</h3>
                 </div>
-                <div class="mb-3">
-                    <label for="playerName" class="form-label">Enter your name:</label>
-                    <input type="text" class="form-control" id="playerName" maxlength="20" required>
-                </div>
-                <button class="btn btn-primary" id="saveScoreBtn" onclick="if (document.getElementById('playerName').value.trim()) { this.disabled = true; }">Save Score</button>
+                <button class="btn btn-primary" id="playAgainBtn">Play Again</button>
             </div>
         `;
         
         document.body.appendChild(gameOverModal);
 
-        const playerNameInput = document.getElementById('playerName');
-        playerNameInput.addEventListener('keyup', (event) => {
-            if (event.key === 'Enter') {
-                document.getElementById('saveScoreBtn').click();
-            }
-        });
-
-        document.getElementById('saveScoreBtn').addEventListener('click', () => {
-            const playerName = document.getElementById('playerName').value.trim();
-            if (playerName) {
-                fetch('/save-score', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        score: this.score,
-                        mode: 'solo',
-                        player_name: playerName
-                    })
-                }).then(() => {
-                    window.location.reload();
-                });
-            }
+        document.getElementById('playAgainBtn').addEventListener('click', () => {
+            window.location.reload();
         });
     }
 
