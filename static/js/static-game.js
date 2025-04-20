@@ -4,7 +4,7 @@ const gameTime = 85; // ONE MINUTE THIRTY SECONDS FOR THE GAME
 let WORD_DICT = new Set();
 
 // Load the dictionary when the page loads
-fetch('/words.txt')
+fetch('words.txt')
     .then(response => response.text())
     .then(text => {
         const words = text.split('\n').filter(word => word.trim() !== '');
