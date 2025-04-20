@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Hunt</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="icon" href="/img/favicon.png" type="image/png">
+</head>
+<body>
+    <div id="startModal" class="game-over-modal">
+        <div class="game-over-content">
+            <h2>Word Hunt
+                <button id="helpBtn" class="btn btn-outline-info ms-3">
+                    <i class="bi bi-question-circle"></i>
+                </button>
+            </h2>
+            
+            <div id="menuOptions">
+                <button id="playSoloBtn" class="btn btn-success mb-3 w-100">Play</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instructions Modal -->
+    <div id="instructionsModal" class="instructions-modal">
+        <div class="instructions-content">
+            <h2>How to Play Word Hunt</h2>
+            <ul class="instructions-list">
+                <li>Find words by connecting adjacent letters in any direction (horizontal, vertical, or diagonal).</li>
+                <li>Words must be at least 3 letters long.</li>
+                <li>You can't use the same letter cell more than once in a word.</li>
+                <li>Score points based on word length:
+                    <ul class="ms-4">
+                        <li>3 letters: 100 points</li>
+                        <li>4 letters: 400 points</li>
+                        <li>5 letters: 800 points</li>
+                        <li>6 letters: 1400 points</li>
+                        <li>7 letters: 1800 points</li>
+                    </ul>
+                </li>
+                <li>You have 90 seconds to find as many words as possible.</li>
+                <li>The game ends when the timer runs out.</li>
+            </ul>
+            <button id="closeInstructions" class="btn btn-primary mt-3">Got it!</button>
+        </div>
+    </div>
+
+    <div class="container py-4">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center mb-4">
+                    <h1 class="mb-0">Word Hunt
+                    </h1>
+                </div>
+                <div class="timer-container">
+                    <div id="timer" class="timer">1:25</div>
+                    <div id="currentWordDisplay" class="current-word mt-2"></div>
+                </div>
+                <div class="game-container">
+                    <canvas id="gameGrid" width="400" height="400"></canvas>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="score-container">
+                    <div id="players-scores" class="mb-3">
+                        <h3>Score</h3>
+                        <div id="player1Score" class="player-score"></div>
+                    </div>
+                    <div id="foundWordsContainer">
+                        <h3>Found Words</h3>
+                        <ul id="foundWords" class="list-group word-list"></ul>
+                    </div>
+                </div>
+                <button id="newGame" class="btn btn-primary mt-3">Leave Game</button>
+            </div>
+        </div>
+    </div>
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/static-game.js"></script>
+</body>
+</html>
