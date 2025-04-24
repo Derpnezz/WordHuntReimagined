@@ -8,8 +8,7 @@ packages = ["iana-etc"]
 
 [deployment]
 deploymentTarget = "static"
-publicDir = "./static"
-run = ["sh", "-c", "cd static && python -m http.server 8080"]
+publicDir = "static"
 
 [[ports]]
 localPort = 5000

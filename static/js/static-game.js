@@ -1,4 +1,4 @@
-const gameTime = 85; // ONE MINUTE THIRTY SECONDS FOR THE GAME
+const gameTime = 70; // seconds of game time
 
 // Dictionary loading
 let WORD_DICT = new Set();
